@@ -306,8 +306,19 @@ export default function Recebimento() {
             <p className="text-sm text-muted-foreground">Remessa</p>
             <p className="font-semibold">{remessas.find((r) => r.id === selectedRemessa)?.numero ?? "—"}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button asChild variant="secondary"><Link to="/app/conferencia">Conferir</Link></Button>
+            {selectedRemessa && itens.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={confirmarTudo}
+                disabled={confirmandoTudo}
+                className="border-success/50 text-success hover:bg-success hover:text-success-foreground"
+              >
+                {confirmandoTudo ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCheck className="h-4 w-4 mr-2" />}
+                Confirmar Tudo
+              </Button>
+            )}
             {isAdmin && selectedRemessa && (
               <Button onClick={() => marcarRecebida(selectedRemessa)}>Marcar como Recebida</Button>
             )}
