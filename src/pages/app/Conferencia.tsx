@@ -13,6 +13,8 @@ import { ScanBarcode, CheckCircle2, Loader2, History, AlertOctagon } from "lucid
 import { toast } from "sonner";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge, CountCell } from "@/components/DiffBadge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { FileCheck2 } from "lucide-react";
 
 export default function Conferencia() {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ export default function Conferencia() {
   const [qtd, setQtd] = useState("1");
   const [submitting, setSubmitting] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [closingBip, setClosingBip] = useState(false);
   const [bipagens, setBipagens] = useState<any[]>([]);
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const selectedRef = useRef<string | null>(null);
@@ -154,11 +157,45 @@ export default function Conferencia() {
         qtd_esperada: i.qtd_esperada,
         qtd_conferida: i.qtd_conferida,
         diferenca: Number(i.qtd_conferida) - Number(i.qtd_esperada),
+        remessa_numero: remessaAtual?.numero ?? null,
+        remessa_categoria: remessaAtual?.categoria ?? null,
       })));
     }
     await supabase.from("remessas").update({ status: "finalizada", finalizada_em: new Date().toISOString() }).eq("id", selected);
     toast.success("Conferência finalizada");
     setFinishing(false);
+  };
+
+  const finalizarBipagem = async () => {
+    if (!selected || !user) return;
+    setClosingBip(true);
+    // Snapshot dos divergentes (incluindo bipados que não constam, qtd_esperada=0)
+    const divergentes = itens.filter((i) => Number(i.qtd_conferida) !== Number(i.qtd_esperada));
+
+    // Evita duplicar: remove divergências pendentes anteriores desta remessa antes de inserir snapshot atual
+    await supabase.from("divergencias").delete().eq("remessa_id", selected).eq("status", "pendente");
+
+    if (divergentes.length) {
+      const nowIso = new Date().toISOString();
+      const { error } = await supabase.from("divergencias").insert(divergentes.map((i) => ({
+        remessa_id: selected,
+        item_id: i.id,
+        codigo: i.codigo,
+        descricao: i.descricao,
+        qtd_esperada: i.qtd_esperada,
+        qtd_conferida: i.qtd_conferida,
+        diferenca: Number(i.qtd_conferida) - Number(i.qtd_esperada),
+        remessa_numero: remessaAtual?.numero ?? null,
+        remessa_categoria: remessaAtual?.categoria ?? null,
+        finalizado_por: user.id,
+        finalizado_em: nowIso,
+      })));
+      if (error) { toast.error(error.message); setClosingBip(false); return; }
+      toast.success(`Bipagem finalizada — ${divergentes.length} divergência(s) registrada(s)`);
+    } else {
+      toast.success("Bipagem finalizada — sem divergências");
+    }
+    setClosingBip(false);
   };
 
   return (
@@ -321,7 +358,29 @@ export default function Conferencia() {
       )}
 
       {selected && progresso.totalItens > 0 && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="lg" variant="secondary" disabled={closingBip}>
+                {closingBip ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck2 className="h-4 w-4 mr-2" />}
+                Finalizar Bipagem
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Finalizar bipagem?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Será gerado um snapshot dos itens divergentes na aba <strong>Gestão de Divergências</strong>.
+                  Esse histórico é permanente e não será apagado mesmo se a remessa for arquivada ou excluída.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={finalizarBipagem}>Confirmar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           <Button size="lg" onClick={finalizarConferencia} disabled={finishing} className="bg-success text-success-foreground hover:bg-success/90">
             {finishing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
             Conferência Finalizada

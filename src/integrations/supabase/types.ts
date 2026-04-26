@@ -100,12 +100,16 @@ export type Database = {
           created_at: string
           descricao: string | null
           diferenca: number
+          finalizado_em: string | null
+          finalizado_por: string | null
           id: string
           item_id: string | null
           observacao: string | null
           qtd_conferida: number
           qtd_esperada: number
+          remessa_categoria: string | null
           remessa_id: string
+          remessa_numero: string | null
           status: Database["public"]["Enums"]["status_divergencia"]
           updated_at: string
         }
@@ -116,12 +120,16 @@ export type Database = {
           created_at?: string
           descricao?: string | null
           diferenca: number
+          finalizado_em?: string | null
+          finalizado_por?: string | null
           id?: string
           item_id?: string | null
           observacao?: string | null
           qtd_conferida: number
           qtd_esperada: number
+          remessa_categoria?: string | null
           remessa_id: string
+          remessa_numero?: string | null
           status?: Database["public"]["Enums"]["status_divergencia"]
           updated_at?: string
         }
@@ -132,12 +140,16 @@ export type Database = {
           created_at?: string
           descricao?: string | null
           diferenca?: number
+          finalizado_em?: string | null
+          finalizado_por?: string | null
           id?: string
           item_id?: string | null
           observacao?: string | null
           qtd_conferida?: number
           qtd_esperada?: number
+          remessa_categoria?: string | null
           remessa_id?: string
+          remessa_numero?: string | null
           status?: Database["public"]["Enums"]["status_divergencia"]
           updated_at?: string
         }
