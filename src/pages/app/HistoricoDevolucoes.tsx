@@ -258,7 +258,15 @@ export default function HistoricoDevolucoes() {
                                 <TableCell className="text-right">
                                   <CountCell
                                     value={Number(i.qtd_conferida)}
-                                    highlight={ok ? "ok" : divergente ? "danger" : "none"}
+                                    highlight={
+                                      ok
+                                        ? "ok"
+                                        : Number(i.qtd_conferida) > Number(i.qtd_esperada)
+                                        ? "over"
+                                        : divergente
+                                        ? "danger"
+                                        : "none"
+                                    }
                                   />
                                 </TableCell>
                                 <TableCell className="text-right">
