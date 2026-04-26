@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks } from "lucide-react";
+import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Remessa {
@@ -34,6 +34,8 @@ interface Item {
 
 const categorias = ["TODAS", "HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"];
 
+type StatusFiltro = "todos" | "ok" | "divergente" | "pendente" | "nao_consta";
+
 export default function Recebimento() {
   const { settings } = useAppSettings();
   const { isAdmin } = useAuth();
@@ -44,6 +46,8 @@ export default function Recebimento() {
   const [categoria, setCategoria] = useState("TODAS");
   const [dateFilter, setDateFilter] = useState("");
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
+  const [bipagens, setBipagens] = useState<any[]>([]);
+  const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>("todos");
 
   const load = async () => {
     const { data } = await supabase
@@ -63,9 +67,10 @@ export default function Recebimento() {
   useEffect(() => {
     load();
     const ch = supabase
-      .channel("recebimento")
+      .channel(`recebimento_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "remessas" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "remessa_itens" }, () => selectedRemessa && loadItens(selectedRemessa))
+      .on("postgres_changes", { event: "*", schema: "public", table: "conferencias" }, () => selectedRemessa && loadBipagens(selectedRemessa))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
     // eslint-disable-next-line
@@ -80,8 +85,17 @@ export default function Recebimento() {
     setItens(data ?? []);
   };
 
+  const loadBipagens = async (remessaId: string) => {
+    const { data } = await supabase
+      .from("conferencias")
+      .select("*")
+      .eq("remessa_id", remessaId)
+      .order("created_at", { ascending: false });
+    setBipagens(data ?? []);
+  };
+
   useEffect(() => {
-    if (selectedRemessa) loadItens(selectedRemessa);
+    if (selectedRemessa) { loadItens(selectedRemessa); loadBipagens(selectedRemessa); }
   }, [selectedRemessa]);
 
   const filteredRemessas = useMemo(() => {
@@ -92,20 +106,68 @@ export default function Recebimento() {
     });
   }, [remessas, categoria, dateFilter]);
 
+  // Soma todas as bipagens por produto
+  const bipagensPorCodigo = useMemo(() => {
+    const map: Record<string, number> = {};
+    bipagens.forEach((b) => {
+      map[b.codigo] = (map[b.codigo] ?? 0) + Number(b.quantidade);
+    });
+    return map;
+  }, [bipagens]);
+
+  const codigosRemessa = useMemo(() => new Set(itens.map((i) => i.codigo)), [itens]);
+
+  // Itens da remessa + bipagens "extras" (códigos que não constam)
+  const itensComExtras = useMemo(() => {
+    const base = itens.map((i) => ({
+      ...i,
+      qtd_conferida: bipagensPorCodigo[i.codigo] ?? Number(i.qtd_conferida),
+      _naoConsta: false as const,
+    }));
+    const extras = Object.keys(bipagensPorCodigo)
+      .filter((cod) => !codigosRemessa.has(cod))
+      .map((cod) => ({
+        id: `extra-${cod}`,
+        codigo: cod,
+        descricao: "PRODUTO NÃO CONSTA NA REMESSA",
+        qtd_esperada: 0,
+        qtd_conferida: bipagensPorCodigo[cod],
+        recebido_por: null as string | null,
+        recebido_em: null as string | null,
+        _naoConsta: true as const,
+      }));
+    return [...base, ...extras];
+  }, [itens, bipagensPorCodigo, codigosRemessa]);
+
   const filteredItens = useMemo(() => {
-    if (!search) return itens;
-    const q = search.toLowerCase();
-    return itens.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
-  }, [itens, search]);
+    let arr = itensComExtras;
+    if (search) {
+      const q = search.toLowerCase();
+      arr = arr.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
+    }
+    if (statusFiltro !== "todos") {
+      arr = arr.filter((i) => {
+        if (i._naoConsta) return statusFiltro === "nao_consta";
+        const ok = Number(i.qtd_conferida) === Number(i.qtd_esperada) && Number(i.qtd_esperada) > 0;
+        const div = Number(i.qtd_conferida) !== Number(i.qtd_esperada) && Number(i.qtd_conferida) > 0;
+        if (statusFiltro === "ok") return ok;
+        if (statusFiltro === "divergente") return div;
+        if (statusFiltro === "pendente") return !ok && !div;
+        return true;
+      });
+    }
+    return arr;
+  }, [itensComExtras, search, statusFiltro]);
 
   const stats = useMemo(() => {
     const totalItens = itens.length;
-    const conferidos = itens.filter((i) => i.qtd_conferida >= i.qtd_esperada && i.qtd_esperada > 0).length;
-    const divergentes = itens.filter((i) => i.qtd_conferida !== i.qtd_esperada && i.qtd_conferida > 0).length;
+    const conferidos = itensComExtras.filter((i) => !i._naoConsta && Number(i.qtd_conferida) === Number(i.qtd_esperada) && Number(i.qtd_esperada) > 0).length;
+    const divergentes = itensComExtras.filter((i) => !i._naoConsta && Number(i.qtd_conferida) !== Number(i.qtd_esperada) && Number(i.qtd_conferida) > 0).length;
+    const naoConsta = itensComExtras.filter((i) => i._naoConsta).length;
     const totalEsperado = itens.reduce((s, i) => s + Number(i.qtd_esperada), 0);
-    const totalContado = itens.reduce((s, i) => s + Number(i.qtd_conferida), 0);
-    return { totalItens, conferidos, divergentes, totalEsperado, totalContado };
-  }, [itens]);
+    const totalContado = Object.values(bipagensPorCodigo).reduce((s, n) => s + n, 0);
+    return { totalItens, conferidos, divergentes, totalEsperado, totalContado, naoConsta };
+  }, [itens, itensComExtras, bipagensPorCodigo]);
 
   const cardStyle = { backgroundColor: settings.card_bg_color, color: settings.card_text_color };
 
@@ -182,6 +244,31 @@ export default function Recebimento() {
           </div>
         </div>
 
+        {/* Filtros de status em botões */}
+        <div className="flex flex-wrap gap-2 p-4 border-b border-border bg-card/50">
+          <Button size="sm" variant={statusFiltro === "todos" ? "default" : "outline"} onClick={() => setStatusFiltro("todos")}>
+            Todos ({itensComExtras.length})
+          </Button>
+          <Button size="sm" variant={statusFiltro === "ok" ? "default" : "outline"}
+            className={statusFiltro === "ok" ? "bg-success text-success-foreground hover:bg-success/90" : ""}
+            onClick={() => setStatusFiltro("ok")}>
+            <CheckCircle2 className="h-4 w-4 mr-1" /> OK ({stats.conferidos})
+          </Button>
+          <Button size="sm" variant={statusFiltro === "divergente" ? "default" : "outline"}
+            className={statusFiltro === "divergente" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            onClick={() => setStatusFiltro("divergente")}>
+            <AlertTriangle className="h-4 w-4 mr-1" /> Divergente ({stats.divergentes})
+          </Button>
+          <Button size="sm" variant={statusFiltro === "pendente" ? "default" : "outline"} onClick={() => setStatusFiltro("pendente")}>
+            Pendente
+          </Button>
+          <Button size="sm" variant={statusFiltro === "nao_consta" ? "default" : "outline"}
+            className={statusFiltro === "nao_consta" ? "bg-warning text-warning-foreground hover:bg-warning/90" : ""}
+            onClick={() => setStatusFiltro("nao_consta")}>
+            <AlertOctagon className="h-4 w-4 mr-1" /> Não consta ({stats.naoConsta})
+          </Button>
+        </div>
+
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -204,6 +291,25 @@ export default function Recebimento() {
                   const dif = Number(i.qtd_conferida) - Number(i.qtd_esperada);
                   const divergente = dif !== 0 && Number(i.qtd_conferida) > 0;
                   const ok = Number(i.qtd_conferida) === Number(i.qtd_esperada) && Number(i.qtd_esperada) > 0;
+                  if (i._naoConsta) {
+                    return (
+                      <TableRow key={i.id} className="bg-warning/15 hover:bg-warning/25 border-l-4 border-warning">
+                        <TableCell className="font-mono text-xs font-bold">{i.codigo}</TableCell>
+                        <TableCell colSpan={2}>
+                          <Badge className="bg-warning text-warning-foreground gap-1">
+                            <AlertOctagon className="h-3 w-3" /> PRODUTO NÃO CONSTA NA REMESSA
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">{i.qtd_conferida}</TableCell>
+                        <TableCell className="text-right font-semibold text-warning">+{i.qtd_conferida}</TableCell>
+                        <TableCell className="text-xs">—</TableCell>
+                        <TableCell className="text-xs">—</TableCell>
+                        <TableCell>
+                          <Badge className="bg-warning text-warning-foreground">Extra</Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
                   return (
                     <TableRow key={i.id} className={divergente ? "bg-destructive/10 hover:bg-destructive/15" : ""}>
                       <TableCell className="font-mono text-xs">{i.codigo}</TableCell>
