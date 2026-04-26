@@ -20,10 +20,10 @@ export function DiffBadge({ value, className }: DiffBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center gap-1 min-w-[88px] px-3 py-1.5 rounded-full text-sm font-semibold",
-        isZero && "bg-success text-success-foreground",
-        isPos && "bg-primary text-primary-foreground",
-        !isZero && !isPos && "bg-destructive text-destructive-foreground",
+        "inline-flex items-center justify-end gap-1 min-w-[90px] px-3 py-1.5 rounded-md border bg-muted/40 font-mono font-semibold tabular-nums",
+        isZero && "border-success/40 text-success",
+        isPos && "border-primary text-primary",
+        !isZero && !isPos && "border-destructive text-destructive",
         className,
       )}
     >
