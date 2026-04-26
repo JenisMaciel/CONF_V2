@@ -225,6 +225,12 @@ export default function HistoricoDevolucoes() {
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pb-0">
                     <div className="overflow-x-auto border-t border-border/50">
+                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5" /> Itens da remessa
+                        {search.trim() && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
+                          <Badge variant="outline" className="ml-1">filtrado</Badge>
+                        )}
+                      </div>
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -252,6 +258,33 @@ export default function HistoricoDevolucoes() {
                               </TableRow>
                             );
                           })}
+                        </TableBody>
+                      </Table>
+
+                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 border-t border-border/50 flex items-center gap-2">
+                        <ScanBarcode className="h-3.5 w-3.5" /> Histórico de bipagem
+                        <Badge variant="outline" className="ml-1">{bipagensFiltradas(r.id).length}</Badge>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Data/Hora</TableHead>
+                            <TableHead>Código</TableHead>
+                            <TableHead className="text-right">Quantidade</TableHead>
+                            <TableHead>Usuário</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {bipagensFiltradas(r.id).length === 0 ? (
+                            <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">Nenhuma bipagem registrada</TableCell></TableRow>
+                          ) : bipagensFiltradas(r.id).map((b) => (
+                            <TableRow key={b.id}>
+                              <TableCell className="text-xs">{new Date(b.created_at).toLocaleString("pt-BR")}</TableCell>
+                              <TableCell className="font-mono text-xs">{b.codigo}</TableCell>
+                              <TableCell className="text-right font-semibold">+{b.quantidade}</TableCell>
+                              <TableCell className="text-xs">{usuarios[b.user_id] ?? "—"}</TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </div>
