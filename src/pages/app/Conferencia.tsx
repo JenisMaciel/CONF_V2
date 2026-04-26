@@ -240,7 +240,15 @@ export default function Conferencia() {
                     <TableCell className="text-right">
                       <CountCell
                         value={Number(i.qtd_conferida)}
-                        highlight={ok ? "ok" : div ? "danger" : "none"}
+                        highlight={
+                          ok
+                            ? "ok"
+                            : Number(i.qtd_conferida) > Number(i.qtd_esperada)
+                            ? "over"
+                            : div
+                            ? "danger"
+                            : "none"
+                        }
                       />
                     </TableCell>
                     <TableCell className="text-right">
