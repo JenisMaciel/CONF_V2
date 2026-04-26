@@ -14,16 +14,312 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          app_name: string
+          background_url: string | null
+          card_bg_color: string | null
+          card_text_color: string | null
+          id: number
+          login_image_url: string | null
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          app_name?: string
+          background_url?: string | null
+          card_bg_color?: string | null
+          card_text_color?: string | null
+          id?: number
+          login_image_url?: string | null
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          app_name?: string
+          background_url?: string | null
+          card_bg_color?: string | null
+          card_text_color?: string | null
+          id?: number
+          login_image_url?: string | null
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conferencias: {
+        Row: {
+          codigo: string
+          created_at: string
+          id: string
+          item_id: string | null
+          quantidade: number
+          remessa_id: string
+          user_id: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          quantidade: number
+          remessa_id: string
+          user_id: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          quantidade?: number
+          remessa_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conferencias_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "remessa_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conferencias_remessa_id_fkey"
+            columns: ["remessa_id"]
+            isOneToOne: false
+            referencedRelation: "remessas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      divergencias: {
+        Row: {
+          ajustado_em: string | null
+          ajustado_por: string | null
+          codigo: string
+          created_at: string
+          descricao: string | null
+          diferenca: number
+          id: string
+          item_id: string | null
+          observacao: string | null
+          qtd_conferida: number
+          qtd_esperada: number
+          remessa_id: string
+          status: Database["public"]["Enums"]["status_divergencia"]
+          updated_at: string
+        }
+        Insert: {
+          ajustado_em?: string | null
+          ajustado_por?: string | null
+          codigo: string
+          created_at?: string
+          descricao?: string | null
+          diferenca: number
+          id?: string
+          item_id?: string | null
+          observacao?: string | null
+          qtd_conferida: number
+          qtd_esperada: number
+          remessa_id: string
+          status?: Database["public"]["Enums"]["status_divergencia"]
+          updated_at?: string
+        }
+        Update: {
+          ajustado_em?: string | null
+          ajustado_por?: string | null
+          codigo?: string
+          created_at?: string
+          descricao?: string | null
+          diferenca?: number
+          id?: string
+          item_id?: string | null
+          observacao?: string | null
+          qtd_conferida?: number
+          qtd_esperada?: number
+          remessa_id?: string
+          status?: Database["public"]["Enums"]["status_divergencia"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "divergencias_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "remessa_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "divergencias_remessa_id_fkey"
+            columns: ["remessa_id"]
+            isOneToOne: false
+            referencedRelation: "remessas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          ativo: boolean
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      remessa_itens: {
+        Row: {
+          codigo: string
+          created_at: string
+          descricao: string
+          id: string
+          qtd_conferida: number
+          qtd_esperada: number
+          recebido_em: string | null
+          recebido_por: string | null
+          remessa_id: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          descricao: string
+          id?: string
+          qtd_conferida?: number
+          qtd_esperada?: number
+          recebido_em?: string | null
+          recebido_por?: string | null
+          remessa_id: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          descricao?: string
+          id?: string
+          qtd_conferida?: number
+          qtd_esperada?: number
+          recebido_em?: string | null
+          recebido_por?: string | null
+          remessa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remessa_itens_remessa_id_fkey"
+            columns: ["remessa_id"]
+            isOneToOne: false
+            referencedRelation: "remessas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remessas: {
+        Row: {
+          categoria: Database["public"]["Enums"]["categoria_remessa"]
+          created_at: string
+          criado_por: string | null
+          finalizada_em: string | null
+          id: string
+          numero: string
+          recebida_em: string | null
+          recebido_por: string | null
+          status: Database["public"]["Enums"]["status_remessa"]
+          total_itens: number
+          total_qtd_esperada: number
+          updated_at: string
+        }
+        Insert: {
+          categoria: Database["public"]["Enums"]["categoria_remessa"]
+          created_at?: string
+          criado_por?: string | null
+          finalizada_em?: string | null
+          id?: string
+          numero: string
+          recebida_em?: string | null
+          recebido_por?: string | null
+          status?: Database["public"]["Enums"]["status_remessa"]
+          total_itens?: number
+          total_qtd_esperada?: number
+          updated_at?: string
+        }
+        Update: {
+          categoria?: Database["public"]["Enums"]["categoria_remessa"]
+          created_at?: string
+          criado_por?: string | null
+          finalizada_em?: string | null
+          id?: string
+          numero?: string
+          recebida_em?: string | null
+          recebido_por?: string | null
+          status?: Database["public"]["Enums"]["status_remessa"]
+          total_itens?: number
+          total_qtd_esperada?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "master" | "admin" | "user"
+      categoria_remessa: "HISENSE" | "TOSHIBA" | "MULTI" | "OPPO" | "ZTE"
+      status_divergencia: "pendente" | "ajustado"
+      status_remessa: "aberta" | "em_conferencia" | "finalizada" | "recebida"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +446,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["master", "admin", "user"],
+      categoria_remessa: ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"],
+      status_divergencia: ["pendente", "ajustado"],
+      status_remessa: ["aberta", "em_conferencia", "finalizada", "recebida"],
+    },
   },
 } as const
