@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Archive, Package, Search, Calendar } from "lucide-react";
+import { Archive, Package, Search, Calendar, ScanBarcode } from "lucide-react";
 
 const CATEGORIAS = ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"] as const;
 
@@ -31,10 +31,21 @@ interface Item {
   qtd_conferida: number;
 }
 
+interface Bipagem {
+  id: string;
+  remessa_id: string;
+  codigo: string;
+  quantidade: number;
+  user_id: string;
+  created_at: string;
+}
+
 export default function HistoricoDevolucoes() {
   const { isAdmin } = useAuth();
   const [remessas, setRemessas] = useState<Remessa[]>([]);
   const [itens, setItens] = useState<Item[]>([]);
+  const [bipagens, setBipagens] = useState<Bipagem[]>([]);
+  const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -49,10 +60,19 @@ export default function HistoricoDevolucoes() {
     setRemessas(rem ?? []);
     const ids = (rem ?? []).map((r) => r.id);
     if (ids.length) {
-      const { data: its } = await supabase.from("remessa_itens").select("*").in("remessa_id", ids);
+      const [{ data: its }, { data: bips }, { data: profs }] = await Promise.all([
+        supabase.from("remessa_itens").select("*").in("remessa_id", ids),
+        supabase.from("conferencias").select("*").in("remessa_id", ids).order("created_at", { ascending: false }),
+        supabase.from("profiles").select("user_id, display_name, email"),
+      ]);
       setItens(its ?? []);
+      setBipagens(bips ?? []);
+      const map: Record<string, string> = {};
+      profs?.forEach((p) => (map[p.user_id] = p.display_name || p.email));
+      setUsuarios(map);
     } else {
       setItens([]);
+      setBipagens([]);
     }
   };
 
@@ -75,17 +95,19 @@ export default function HistoricoDevolucoes() {
       if (dateTo && (!r.recebida_em || r.recebida_em > dateTo + "T23:59:59")) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        // busca no número da remessa OU em algum item desta remessa
+        // busca no número da remessa OU em algum item OU no histórico de bipagem
         if (r.numero.toLowerCase().includes(q)) return true;
         const itensDaRemessa = itens.filter((i) => i.remessa_id === r.id);
-        const match = itensDaRemessa.some(
+        const matchItem = itensDaRemessa.some(
           (i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)
         );
-        return match;
+        if (matchItem) return true;
+        const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
+        return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q));
       }
       return true;
     });
-  }, [remessas, itens, activeTab, dateFrom, dateTo, search]);
+  }, [remessas, itens, bipagens, activeTab, dateFrom, dateTo, search]);
 
   // Agrupa por categoria para os contadores das abas
   const countByCategoria = useMemo(() => {
@@ -102,6 +124,13 @@ export default function HistoricoDevolucoes() {
     if (!search.trim()) return lista;
     const q = search.toLowerCase();
     return lista.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
+  };
+
+  const bipagensFiltradas = (remessaId: string) => {
+    const lista = bipagens.filter((b) => b.remessa_id === remessaId);
+    if (!search.trim()) return lista;
+    const q = search.toLowerCase();
+    return lista.filter((b) => b.codigo.toLowerCase().includes(q));
   };
 
   return (
@@ -196,6 +225,12 @@ export default function HistoricoDevolucoes() {
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pb-0">
                     <div className="overflow-x-auto border-t border-border/50">
+                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5" /> Itens da remessa
+                        {search.trim() && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
+                          <Badge variant="outline" className="ml-1">filtrado</Badge>
+                        )}
+                      </div>
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -223,6 +258,33 @@ export default function HistoricoDevolucoes() {
                               </TableRow>
                             );
                           })}
+                        </TableBody>
+                      </Table>
+
+                      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 border-t border-border/50 flex items-center gap-2">
+                        <ScanBarcode className="h-3.5 w-3.5" /> Histórico de bipagem
+                        <Badge variant="outline" className="ml-1">{bipagensFiltradas(r.id).length}</Badge>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Data/Hora</TableHead>
+                            <TableHead>Código</TableHead>
+                            <TableHead className="text-right">Quantidade</TableHead>
+                            <TableHead>Usuário</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {bipagensFiltradas(r.id).length === 0 ? (
+                            <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-6">Nenhuma bipagem registrada</TableCell></TableRow>
+                          ) : bipagensFiltradas(r.id).map((b) => (
+                            <TableRow key={b.id}>
+                              <TableCell className="text-xs">{new Date(b.created_at).toLocaleString("pt-BR")}</TableCell>
+                              <TableCell className="font-mono text-xs">{b.codigo}</TableCell>
+                              <TableCell className="text-right font-semibold">+{b.quantidade}</TableCell>
+                              <TableCell className="text-xs">{usuarios[b.user_id] ?? "—"}</TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </div>
