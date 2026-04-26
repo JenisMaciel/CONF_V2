@@ -34,7 +34,7 @@ interface Item {
   recebido_em: string | null;
 }
 
-const categorias = ["TODAS", "HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"];
+
 
 type StatusFiltro = "todos" | "ok" | "divergente" | "pendente" | "nao_consta";
 
@@ -45,7 +45,7 @@ export default function Recebimento() {
   const [selectedRemessa, setSelectedRemessa] = useState<string | null>(null);
   const [itens, setItens] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
-  const [categoria, setCategoria] = useState("TODAS");
+  const [processo, setProcesso] = useState("TODOS");
   const [dateFilter, setDateFilter] = useState("");
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const [bipagens, setBipagens] = useState<any[]>([]);
@@ -117,13 +117,19 @@ export default function Recebimento() {
     if (selectedRemessa) { loadItens(selectedRemessa); loadBipagens(selectedRemessa); }
   }, [selectedRemessa]);
 
+  const processosDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    remessas.forEach((r) => r.categoria && set.add(r.categoria));
+    return ["TODOS", ...Array.from(set).sort()];
+  }, [remessas]);
+
   const filteredRemessas = useMemo(() => {
     return remessas.filter((r) => {
-      if (categoria !== "TODAS" && r.categoria !== categoria) return false;
+      if (processo !== "TODOS" && r.categoria !== processo) return false;
       if (dateFilter && !r.created_at.startsWith(dateFilter)) return false;
       return true;
     });
-  }, [remessas, categoria, dateFilter]);
+  }, [remessas, processo, dateFilter]);
 
   // Soma todas as bipagens por produto
   const bipagensPorCodigo = useMemo(() => {
@@ -208,10 +214,10 @@ export default function Recebimento() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <Select value={categoria} onValueChange={setCategoria}>
-          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+        <Select value={processo} onValueChange={setProcesso}>
+          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Processo" /></SelectTrigger>
           <SelectContent>
-            {categorias.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {processosDisponiveis.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="w-[180px]" />

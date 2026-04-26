@@ -6,15 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileSpreadsheet, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIAS = ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"] as const;
-
 export default function Dados() {
   const { user, isAdmin } = useAuth();
-  const [categoria, setCategoria] = useState<string>("");
+  const [processo, setProcesso] = useState("");
   const [numero, setNumero] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -23,7 +20,7 @@ export default function Dados() {
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
   const handleUpload = async () => {
-    if (!categoria) { toast.error("Selecione a categoria"); return; }
+    if (!processo.trim()) { toast.error("Informe o processo"); return; }
     if (!file) { toast.error("Selecione um arquivo XLSX"); return; }
     if (!numero.trim()) { toast.error("Informe o número da remessa"); return; }
 
@@ -34,7 +31,6 @@ export default function Dados() {
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
 
-      // mapear colunas (aceita variações)
       const itens = rows.map((r) => {
         const codigo = String(r["CÓDIGO"] ?? r["CODIGO"] ?? r["Código"] ?? r["codigo"] ?? "").trim();
         const descricao = String(r["DESCRIÇÃO"] ?? r["DESCRICAO"] ?? r["Descrição"] ?? r["descricao"] ?? "").trim();
@@ -46,11 +42,12 @@ export default function Dados() {
 
       const totalQtd = itens.reduce((s, i) => s + Number(i.qtd), 0);
 
+      // Mantemos o campo `categoria` no banco para compatibilidade, mas armazenamos o processo livre nele.
       const { data: remessa, error } = await supabase
         .from("remessas")
         .insert({
           numero: numero.trim(),
-          categoria: categoria as any,
+          categoria: processo.trim().toUpperCase() as any,
           status: "aberta",
           total_itens: itens.length,
           total_qtd_esperada: totalQtd,
@@ -74,7 +71,7 @@ export default function Dados() {
       toast.success(`Remessa criada com ${itens.length} itens`);
       setFile(null);
       setNumero("");
-      setCategoria("");
+      setProcesso("");
       if (inputRef.current) inputRef.current.value = "";
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao processar planilha");
@@ -93,13 +90,14 @@ export default function Dados() {
       <Card className="p-6 border-border/50 shadow-card space-y-5">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <Label>Categoria <span className="text-destructive">*</span></Label>
-            <Select value={categoria} onValueChange={setCategoria}>
-              <SelectTrigger className="mt-2"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Label>Processo <span className="text-destructive">*</span></Label>
+            <Input
+              className="mt-2"
+              value={processo}
+              onChange={(e) => setProcesso(e.target.value)}
+              placeholder="Ex: HISENSE-2025-04, DEVOLUÇÃO XYZ..."
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">Informe o processo antes de selecionar o arquivo</p>
           </div>
           <div>
             <Label>Número da Remessa <span className="text-destructive">*</span></Label>
@@ -117,18 +115,18 @@ export default function Dados() {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="hidden"
               id="file-input"
-              disabled={!categoria}
+              disabled={!processo.trim()}
             />
-            <label htmlFor="file-input" className={`cursor-pointer block ${!categoria ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <label htmlFor="file-input" className={`cursor-pointer block ${!processo.trim() ? "opacity-50 cursor-not-allowed" : ""}`}>
               <FileSpreadsheet className="h-10 w-10 mx-auto text-muted-foreground" />
               <p className="mt-3 text-sm font-medium">{file ? file.name : "Clique para selecionar planilha"}</p>
               <p className="text-xs text-muted-foreground mt-1">Colunas: CÓDIGO, DESCRIÇÃO, QTDE</p>
-              {!categoria && <p className="text-xs text-warning mt-2">Selecione a categoria primeiro</p>}
+              {!processo.trim() && <p className="text-xs text-warning mt-2">Informe o processo primeiro</p>}
             </label>
           </div>
         </div>
 
-        <Button onClick={handleUpload} disabled={loading || !categoria || !file || !numero.trim()} className="w-full gradient-primary text-primary-foreground shadow-glow">
+        <Button onClick={handleUpload} disabled={loading || !processo.trim() || !file || !numero.trim()} className="w-full gradient-primary text-primary-foreground shadow-glow">
           {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
           Criar Remessa
         </Button>

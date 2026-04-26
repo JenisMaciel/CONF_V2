@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Share2, UserPlus, Upload, Loader2 } from "lucide-react";
+import { Share2, UserPlus, Upload, Loader2, Mail, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Configuracoes() {
@@ -33,6 +33,12 @@ export default function Configuracoes() {
   const [newRole, setNewRole] = useState<"user" | "admin">("user");
   const [creating, setCreating] = useState(false);
 
+  // Destinatários de e-mail
+  const [destinatarios, setDestinatarios] = useState<any[]>([]);
+  const [destNome, setDestNome] = useState("");
+  const [destEmail, setDestEmail] = useState("");
+  const [savingDest, setSavingDest] = useState(false);
+
   useEffect(() => {
     setAppName(settings.app_name);
     setTextColor(settings.card_text_color);
@@ -50,7 +56,37 @@ export default function Configuracoes() {
     setRolesMap(map);
   };
 
-  useEffect(() => { if (isAdmin) loadUsers(); }, [isAdmin]);
+  useEffect(() => { if (isAdmin) { loadUsers(); loadDestinatarios(); } }, [isAdmin]);
+
+  const loadDestinatarios = async () => {
+    const { data } = await supabase.from("email_destinatarios").select("*").order("nome");
+    setDestinatarios(data ?? []);
+  };
+
+  const addDestinatario = async () => {
+    if (!destNome.trim() || !destEmail.trim()) { toast.error("Preencha nome e e-mail"); return; }
+    if (!destEmail.includes("@")) { toast.error("E-mail inválido"); return; }
+    setSavingDest(true);
+    const { error } = await supabase.from("email_destinatarios").insert({
+      nome: destNome.trim(),
+      email: destEmail.trim().toLowerCase(),
+    });
+    setSavingDest(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Destinatário cadastrado");
+    setDestNome(""); setDestEmail("");
+    loadDestinatarios();
+  };
+
+  const toggleDestAtivo = async (d: any) => {
+    await supabase.from("email_destinatarios").update({ ativo: !d.ativo }).eq("id", d.id);
+    loadDestinatarios();
+  };
+
+  const removerDestinatario = async (id: string) => {
+    await supabase.from("email_destinatarios").delete().eq("id", id);
+    loadDestinatarios();
+  };
 
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
@@ -124,6 +160,7 @@ export default function Configuracoes() {
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="emails">Destinatários de E-mail</TabsTrigger>
           <TabsTrigger value="cards">Estilo dos Cards</TabsTrigger>
           {isMaster && <TabsTrigger value="brand">Personalização Master</TabsTrigger>}
         </TabsList>
@@ -177,6 +214,59 @@ export default function Configuracoes() {
                       ))}
                     </TableCell>
                     <TableCell><Switch checked={u.ativo} onCheckedChange={() => toggleAtivo(u)} /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+
+        <TabsContent value="emails" className="space-y-4">
+          <Card className="p-5 border-border/50 shadow-card space-y-4">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> Cadastrar destinatário</h3>
+              <p className="text-xs text-muted-foreground mt-1">Esses e-mails aparecerão como opção ao enviar processos arquivados.</p>
+            </div>
+            <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+              <div>
+                <Label>Nome</Label>
+                <Input className="mt-2" value={destNome} onChange={(e) => setDestNome(e.target.value)} placeholder="Ex: João Silva" />
+              </div>
+              <div>
+                <Label>E-mail</Label>
+                <Input className="mt-2" type="email" value={destEmail} onChange={(e) => setDestEmail(e.target.value)} placeholder="joao@empresa.com" />
+              </div>
+              <Button onClick={addDestinatario} disabled={savingDest} className="gradient-primary text-primary-foreground">
+                {savingDest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+                Adicionar
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="p-0 overflow-hidden border-border/50 shadow-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>Ativo</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {destinatarios.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Nenhum destinatário cadastrado</TableCell></TableRow>
+                ) : destinatarios.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell>{d.nome}</TableCell>
+                    <TableCell className="font-mono text-xs">{d.email}</TableCell>
+                    <TableCell><Switch checked={d.ativo} onCheckedChange={() => toggleDestAtivo(d)} /></TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="ghost" onClick={() => removerDestinatario(d.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

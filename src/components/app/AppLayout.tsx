@@ -22,7 +22,7 @@ const NAV: NavItem[] = [
   { to: "/app/dados", label: "Dados", icon: Database, adminOnly: true },
   { to: "/app/divergencias", label: "Gestão de Divergência", icon: AlertTriangle, adminOnly: true },
   { to: "/app/historico", label: "Histórico", icon: History, adminOnly: true },
-  { to: "/app/historico-devolucoes", label: "Histórico de Devoluções", icon: Archive, adminOnly: true },
+  { to: "/app/processos-conferidos", label: "Processos Conferidos", icon: Archive, adminOnly: true },
   { to: "/app/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
 ];
 
