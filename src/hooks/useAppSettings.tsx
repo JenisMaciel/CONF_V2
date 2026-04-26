@@ -32,7 +32,7 @@ export function useAppSettings() {
   useEffect(() => {
     refresh();
     const ch = supabase
-      .channel("app_settings_changes")
+      .channel(`app_settings_changes_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, () => refresh())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
