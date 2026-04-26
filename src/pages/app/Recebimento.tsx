@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon } from "lucide-react";
+import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge, CountCell } from "@/components/DiffBadge";
+import { toast } from "sonner";
 
 interface Remessa {
   id: string;
@@ -40,7 +41,8 @@ type StatusFiltro = "todos" | "ok" | "divergente" | "pendente" | "nao_consta";
 
 export default function Recebimento() {
   const { settings } = useAppSettings();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+  const [confirmandoTudo, setConfirmandoTudo] = useState(false);
   const [remessas, setRemessas] = useState<Remessa[]>([]);
   const [selectedRemessa, setSelectedRemessa] = useState<string | null>(null);
   const [itens, setItens] = useState<Item[]>([]);
@@ -203,6 +205,34 @@ export default function Recebimento() {
     setBipagens([]);
   };
 
+  const confirmarTudo = async () => {
+    if (!selectedRemessa || !user) return;
+    const pendentes = itens
+      .map((i) => ({ item: i, faltam: Number(i.qtd_esperada) - (bipagensPorCodigo[i.codigo] ?? 0) }))
+      .filter((p) => p.faltam > 0);
+    if (!pendentes.length) { toast.info("Nada para confirmar — todos os itens já estão completos"); return; }
+    if (!confirm(`Confirmar ${pendentes.length} ite${pendentes.length === 1 ? "m" : "ns"} pendente(s) com a quantidade esperada?`)) return;
+
+    setConfirmandoTudo(true);
+    try {
+      const rows = pendentes.map((p) => ({
+        remessa_id: selectedRemessa,
+        item_id: p.item.id,
+        codigo: p.item.codigo,
+        quantidade: p.faltam,
+        user_id: user.id,
+      }));
+      const { error } = await supabase.from("conferencias").insert(rows);
+      if (error) throw error;
+      toast.success(`${pendentes.length} ite${pendentes.length === 1 ? "m confirmado" : "ns confirmados"} em massa`);
+      await loadBipagens(selectedRemessa);
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao confirmar em massa");
+    } finally {
+      setConfirmandoTudo(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-wrap items-end gap-4 justify-between">
@@ -276,8 +306,19 @@ export default function Recebimento() {
             <p className="text-sm text-muted-foreground">Remessa</p>
             <p className="font-semibold">{remessas.find((r) => r.id === selectedRemessa)?.numero ?? "—"}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button asChild variant="secondary"><Link to="/app/conferencia">Conferir</Link></Button>
+            {selectedRemessa && itens.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={confirmarTudo}
+                disabled={confirmandoTudo}
+                className="border-success/50 text-success hover:bg-success hover:text-success-foreground"
+              >
+                {confirmandoTudo ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCheck className="h-4 w-4 mr-2" />}
+                Confirmar Tudo
+              </Button>
+            )}
             {isAdmin && selectedRemessa && (
               <Button onClick={() => marcarRecebida(selectedRemessa)}>Marcar como Recebida</Button>
             )}
