@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge } from "@/components/DiffBadge";
@@ -78,7 +78,7 @@ export default function Divergencias() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Remessa</TableHead>
+                <TableHead className="min-w-[180px]">Remessa de origem</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead className="text-right">Esperado</TableHead>
@@ -95,9 +95,22 @@ export default function Divergencias() {
                 <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-10">Nenhuma divergência</TableCell></TableRow>
               ) : filtered.map((d) => (
                 <TableRow key={d.id} className={d.status === "ajustado" ? "" : "bg-destructive/5"}>
-                  <TableCell className="text-xs">
-                    <div className="font-semibold">{d.remessa_numero ?? "—"}</div>
-                    <div className="text-muted-foreground">{d.remessa_categoria ?? ""}</div>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
+                        <Package className="h-4 w-4" />
+                      </div>
+                      <div className="leading-tight">
+                        <div className="font-mono font-semibold text-sm">
+                          {d.remessa_numero ?? "—"}
+                        </div>
+                        {d.remessa_categoria && (
+                          <Badge variant="outline" className="mt-0.5 text-[10px] px-1.5 py-0 font-medium">
+                            {d.remessa_categoria}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="font-mono text-xs">{d.codigo}</TableCell>
                   <TableCell>{d.descricao}</TableCell>
