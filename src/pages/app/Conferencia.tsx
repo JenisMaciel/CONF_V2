@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -25,6 +25,8 @@ export default function Conferencia() {
   const [finishing, setFinishing] = useState(false);
   const [bipagens, setBipagens] = useState<any[]>([]);
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
+  const selectedRef = useRef<string | null>(null);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
 
   const load = async () => {
     const { data } = await supabase
@@ -63,9 +65,23 @@ export default function Conferencia() {
     load();
     const ch = supabase
       .channel(`conf_${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "remessa_itens" }, () => selected && loadItens(selected))
+      .on("postgres_changes", { event: "*", schema: "public", table: "remessa_itens" }, (payload) => {
+        const row: any = payload.new ?? payload.old;
+        if (!row || row.remessa_id !== selectedRef.current) return;
+        if (payload.eventType === "INSERT") {
+          setItens((prev) => prev.some((i) => i.id === row.id) ? prev : [...prev, row].sort((a, b) => a.codigo.localeCompare(b.codigo)));
+        } else if (payload.eventType === "UPDATE") {
+          setItens((prev) => prev.map((i) => (i.id === row.id ? { ...i, ...row } : i)));
+        } else if (payload.eventType === "DELETE") {
+          setItens((prev) => prev.filter((i) => i.id !== row.id));
+        }
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "remessas" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "conferencias" }, () => selected && loadBipagens(selected))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "conferencias" }, (payload) => {
+        const row: any = payload.new;
+        if (!row || row.remessa_id !== selectedRef.current) return;
+        setBipagens((prev) => prev.some((b) => b.id === row.id) ? prev : [row, ...prev]);
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
     // eslint-disable-next-line
