@@ -46,7 +46,7 @@ export function DiffBadge({ value, className }: DiffBadgeProps) {
 
 interface CountCellProps {
   value: number | string;
-  highlight?: "ok" | "warn" | "danger" | "none";
+  highlight?: "ok" | "warn" | "danger" | "over" | "none";
   className?: string;
 }
 
@@ -62,6 +62,7 @@ export function CountCell({ value, highlight = "none", className }: CountCellPro
         highlight === "ok" && "border-success/40",
         highlight === "warn" && "border-warning text-warning",
         highlight === "danger" && "border-destructive text-destructive",
+        highlight === "over" && "border-primary text-primary",
         highlight === "none" && "border-border",
         className,
       )}
