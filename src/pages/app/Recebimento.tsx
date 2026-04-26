@@ -41,7 +41,8 @@ type StatusFiltro = "todos" | "ok" | "divergente" | "pendente" | "nao_consta";
 
 export default function Recebimento() {
   const { settings } = useAppSettings();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+  const [confirmandoTudo, setConfirmandoTudo] = useState(false);
   const [remessas, setRemessas] = useState<Remessa[]>([]);
   const [selectedRemessa, setSelectedRemessa] = useState<string | null>(null);
   const [itens, setItens] = useState<Item[]>([]);
