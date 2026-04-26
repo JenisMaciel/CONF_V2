@@ -205,6 +205,34 @@ export default function Recebimento() {
     setBipagens([]);
   };
 
+  const confirmarTudo = async () => {
+    if (!selectedRemessa || !user) return;
+    const pendentes = itens
+      .map((i) => ({ item: i, faltam: Number(i.qtd_esperada) - (bipagensPorCodigo[i.codigo] ?? 0) }))
+      .filter((p) => p.faltam > 0);
+    if (!pendentes.length) { toast.info("Nada para confirmar — todos os itens já estão completos"); return; }
+    if (!confirm(`Confirmar ${pendentes.length} ite${pendentes.length === 1 ? "m" : "ns"} pendente(s) com a quantidade esperada?`)) return;
+
+    setConfirmandoTudo(true);
+    try {
+      const rows = pendentes.map((p) => ({
+        remessa_id: selectedRemessa,
+        item_id: p.item.id,
+        codigo: p.item.codigo,
+        quantidade: p.faltam,
+        user_id: user.id,
+      }));
+      const { error } = await supabase.from("conferencias").insert(rows);
+      if (error) throw error;
+      toast.success(`${pendentes.length} ite${pendentes.length === 1 ? "m confirmado" : "ns confirmados"} em massa`);
+      await loadBipagens(selectedRemessa);
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao confirmar em massa");
+    } finally {
+      setConfirmandoTudo(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-wrap items-end gap-4 justify-between">
