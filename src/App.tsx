@@ -13,6 +13,7 @@ import Conferencia from "./pages/app/Conferencia";
 import Dados from "./pages/app/Dados";
 import Divergencias from "./pages/app/Divergencias";
 import Historico from "./pages/app/Historico";
+import HistoricoDevolucoes from "./pages/app/HistoricoDevolucoes";
 import Configuracoes from "./pages/app/Configuracoes";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="dados" element={<Dados />} />
               <Route path="divergencias" element={<Divergencias />} />
               <Route path="historico" element={<Historico />} />
+              <Route path="historico-devolucoes" element={<HistoricoDevolucoes />} />
               <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
             <Route path="*" element={<NotFound />} />

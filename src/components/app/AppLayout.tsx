@@ -5,7 +5,7 @@ import { useAppSettings } from "@/hooks/useAppSettings";
 import { Button } from "@/components/ui/button";
 import {
   PackageCheck, ScanBarcode, Database, AlertTriangle, History,
-  Settings, LogOut, Menu, X, PackageOpen
+  Settings, LogOut, Menu, X, PackageOpen, Archive
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { to: "/app/dados", label: "Dados", icon: Database, adminOnly: true },
   { to: "/app/divergencias", label: "Gestão de Divergência", icon: AlertTriangle, adminOnly: true },
   { to: "/app/historico", label: "Histórico", icon: History, adminOnly: true },
+  { to: "/app/historico-devolucoes", label: "Histórico de Devoluções", icon: Archive, adminOnly: true },
   { to: "/app/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
 ];
 
