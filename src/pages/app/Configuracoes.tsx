@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Share2, UserPlus, Upload, Loader2 } from "lucide-react";
+import { Share2, UserPlus, Upload, Loader2, Mail, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Configuracoes() {
@@ -33,6 +33,12 @@ export default function Configuracoes() {
   const [newRole, setNewRole] = useState<"user" | "admin">("user");
   const [creating, setCreating] = useState(false);
 
+  // Destinatários de e-mail
+  const [destinatarios, setDestinatarios] = useState<any[]>([]);
+  const [destNome, setDestNome] = useState("");
+  const [destEmail, setDestEmail] = useState("");
+  const [savingDest, setSavingDest] = useState(false);
+
   useEffect(() => {
     setAppName(settings.app_name);
     setTextColor(settings.card_text_color);
@@ -50,7 +56,37 @@ export default function Configuracoes() {
     setRolesMap(map);
   };
 
-  useEffect(() => { if (isAdmin) loadUsers(); }, [isAdmin]);
+  useEffect(() => { if (isAdmin) { loadUsers(); loadDestinatarios(); } }, [isAdmin]);
+
+  const loadDestinatarios = async () => {
+    const { data } = await supabase.from("email_destinatarios").select("*").order("nome");
+    setDestinatarios(data ?? []);
+  };
+
+  const addDestinatario = async () => {
+    if (!destNome.trim() || !destEmail.trim()) { toast.error("Preencha nome e e-mail"); return; }
+    if (!destEmail.includes("@")) { toast.error("E-mail inválido"); return; }
+    setSavingDest(true);
+    const { error } = await supabase.from("email_destinatarios").insert({
+      nome: destNome.trim(),
+      email: destEmail.trim().toLowerCase(),
+    });
+    setSavingDest(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Destinatário cadastrado");
+    setDestNome(""); setDestEmail("");
+    loadDestinatarios();
+  };
+
+  const toggleDestAtivo = async (d: any) => {
+    await supabase.from("email_destinatarios").update({ ativo: !d.ativo }).eq("id", d.id);
+    loadDestinatarios();
+  };
+
+  const removerDestinatario = async (id: string) => {
+    await supabase.from("email_destinatarios").delete().eq("id", id);
+    loadDestinatarios();
+  };
 
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
