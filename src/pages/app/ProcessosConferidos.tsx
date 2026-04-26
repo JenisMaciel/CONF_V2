@@ -111,7 +111,7 @@ export default function ProcessosConferidos() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
+  
 
   const processosDisponiveis = useMemo(() => {
     const set = new Set<string>();
@@ -142,6 +142,8 @@ export default function ProcessosConferidos() {
 
   const totalItens = filteredRemessas.reduce((s, r) => s + (r.total_itens || 0), 0);
   const totalQtd = filteredRemessas.reduce((s, r) => s + Number(r.total_qtd_esperada || 0), 0);
+
+  if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
   const itensFiltrados = (remessaId: string) => {
     const lista = itens.filter((i) => i.remessa_id === remessaId);
