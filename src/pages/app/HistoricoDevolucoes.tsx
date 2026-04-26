@@ -9,6 +9,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Archive, Package, Search, Calendar, ScanBarcode } from "lucide-react";
+import { fmtNum } from "@/lib/utils";
+import { DiffBadge, CountCell } from "@/components/DiffBadge";
 
 const CATEGORIAS = ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"] as const;
 
@@ -173,15 +175,15 @@ export default function HistoricoDevolucoes() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-5 border-border/50 shadow-card gradient-card">
           <p className="text-sm text-muted-foreground">Remessas arquivadas</p>
-          <p className="text-3xl font-bold mt-2">{filteredRemessas.length}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(filteredRemessas.length)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card gradient-card">
           <p className="text-sm text-muted-foreground">Total de itens</p>
-          <p className="text-3xl font-bold mt-2">{totalItens}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(totalItens)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card gradient-card">
           <p className="text-sm text-muted-foreground">Qtd. acumulada</p>
-          <p className="text-3xl font-bold mt-2">{totalQtd}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(totalQtd)}</p>
         </Card>
       </div>
 
@@ -189,11 +191,11 @@ export default function HistoricoDevolucoes() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="TODAS" className="gap-2">
-            TODAS <Badge variant="secondary">{countByCategoria.TODAS}</Badge>
+            TODAS <Badge variant="secondary">{fmtNum(countByCategoria.TODAS)}</Badge>
           </TabsTrigger>
           {CATEGORIAS.map((c) => (
             <TabsTrigger key={c} value={c} className="gap-2">
-              {c} <Badge variant="secondary">{countByCategoria[c]}</Badge>
+              {c} <Badge variant="secondary">{fmtNum(countByCategoria[c])}</Badge>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -219,7 +221,7 @@ export default function HistoricoDevolucoes() {
                       </div>
                       <Badge variant="secondary">{r.categoria}</Badge>
                       <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {r.total_itens} itens • {r.total_qtd_esperada} und
+                        {fmtNum(r.total_itens)} itens • {fmtNum(r.total_qtd_esperada)} und
                       </span>
                     </div>
                   </AccordionTrigger>
@@ -246,14 +248,21 @@ export default function HistoricoDevolucoes() {
                             <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">Nenhum item</TableCell></TableRow>
                           ) : itensFiltrados(r.id).map((i) => {
                             const dif = Number(i.qtd_conferida) - Number(i.qtd_esperada);
+                            const ok = dif === 0 && Number(i.qtd_esperada) > 0;
+                            const divergente = dif !== 0 && Number(i.qtd_conferida) > 0;
                             return (
                               <TableRow key={i.id}>
                                 <TableCell className="font-mono text-xs">{i.codigo}</TableCell>
                                 <TableCell>{i.descricao}</TableCell>
-                                <TableCell className="text-right">{i.qtd_esperada}</TableCell>
-                                <TableCell className="text-right font-semibold">{i.qtd_conferida}</TableCell>
-                                <TableCell className={`text-right font-semibold ${dif < 0 ? "text-destructive" : dif > 0 ? "text-warning" : ""}`}>
-                                  {dif > 0 ? `+${dif}` : dif}
+                                <TableCell className="text-right tabular-nums">{fmtNum(i.qtd_esperada)}</TableCell>
+                                <TableCell className="text-right">
+                                  <CountCell
+                                    value={Number(i.qtd_conferida)}
+                                    highlight={ok ? "ok" : divergente ? "danger" : "none"}
+                                  />
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <DiffBadge value={dif} />
                                 </TableCell>
                               </TableRow>
                             );
@@ -263,7 +272,7 @@ export default function HistoricoDevolucoes() {
 
                       <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 border-t border-border/50 flex items-center gap-2">
                         <ScanBarcode className="h-3.5 w-3.5" /> Histórico de bipagem
-                        <Badge variant="outline" className="ml-1">{bipagensFiltradas(r.id).length}</Badge>
+                        <Badge variant="outline" className="ml-1">{fmtNum(bipagensFiltradas(r.id).length)}</Badge>
                       </div>
                       <Table>
                         <TableHeader>
@@ -281,7 +290,7 @@ export default function HistoricoDevolucoes() {
                             <TableRow key={b.id}>
                               <TableCell className="text-xs">{new Date(b.created_at).toLocaleString("pt-BR")}</TableCell>
                               <TableCell className="font-mono text-xs">{b.codigo}</TableCell>
-                              <TableCell className="text-right font-semibold">+{b.quantidade}</TableCell>
+                              <TableCell className="text-right font-semibold tabular-nums">+{fmtNum(b.quantidade)}</TableCell>
                               <TableCell className="text-xs">{usuarios[b.user_id] ?? "—"}</TableCell>
                             </TableRow>
                           ))}
