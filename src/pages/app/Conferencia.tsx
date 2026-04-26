@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ScanBarcode, CheckCircle2, Loader2 } from "lucide-react";
+import { ScanBarcode, CheckCircle2, Loader2, History, AlertOctagon } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Conferencia() {
@@ -21,6 +21,8 @@ export default function Conferencia() {
   const [qtd, setQtd] = useState("1");
   const [submitting, setSubmitting] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [bipagens, setBipagens] = useState<any[]>([]);
+  const [usuarios, setUsuarios] = useState<Record<string, string>>({});
 
   const load = async () => {
     const { data } = await supabase
@@ -30,6 +32,11 @@ export default function Conferencia() {
       .order("created_at", { ascending: false });
     setRemessas(data ?? []);
     if (data?.length && !selected) setSelected(data[0].id);
+
+    const { data: profs } = await supabase.from("profiles").select("user_id, display_name, email");
+    const map: Record<string, string> = {};
+    profs?.forEach((p) => (map[p.user_id] = p.display_name || p.email));
+    setUsuarios(map);
   };
 
   const loadItens = async (id: string) => {
@@ -41,18 +48,28 @@ export default function Conferencia() {
     setItens(data ?? []);
   };
 
+  const loadBipagens = async (id: string) => {
+    const { data } = await supabase
+      .from("conferencias")
+      .select("*")
+      .eq("remessa_id", id)
+      .order("created_at", { ascending: false });
+    setBipagens(data ?? []);
+  };
+
   useEffect(() => {
     load();
     const ch = supabase
-      .channel("conf")
+      .channel(`conf_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "remessa_itens" }, () => selected && loadItens(selected))
       .on("postgres_changes", { event: "*", schema: "public", table: "remessas" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "conferencias" }, () => selected && loadBipagens(selected))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => { if (selected) loadItens(selected); }, [selected]);
+  useEffect(() => { if (selected) { loadItens(selected); loadBipagens(selected); } }, [selected]);
 
   const remessaAtual = remessas.find((r) => r.id === selected);
 
@@ -63,6 +80,8 @@ export default function Conferencia() {
     return { totalItens, conferidos, pct };
   }, [itens]);
 
+  const codigosRemessa = useMemo(() => new Set(itens.map((i) => i.codigo)), [itens]);
+
   const bipar = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected || !user || !codigo.trim()) return;
@@ -71,29 +90,33 @@ export default function Conferencia() {
     setSubmitting(true);
 
     const item = itens.find((i) => i.codigo === codigo.trim());
-    if (!item) { toast.error("Código não encontrado na remessa"); setSubmitting(false); return; }
 
+    // Sempre registra a bipagem, mesmo se não constar na remessa
     const { error: e1 } = await supabase.from("conferencias").insert({
       remessa_id: selected,
-      item_id: item.id,
-      codigo: item.codigo,
+      item_id: item?.id ?? null,
+      codigo: codigo.trim(),
       quantidade,
       user_id: user.id,
     });
     if (e1) { toast.error(e1.message); setSubmitting(false); return; }
 
-    const novaQtd = Number(item.qtd_conferida) + quantidade;
-    await supabase.from("remessa_itens").update({
-      qtd_conferida: novaQtd,
-      recebido_por: user.id,
-      recebido_em: new Date().toISOString(),
-    }).eq("id", item.id);
+    if (item) {
+      const novaQtd = Number(item.qtd_conferida) + quantidade;
+      await supabase.from("remessa_itens").update({
+        qtd_conferida: novaQtd,
+        recebido_por: user.id,
+        recebido_em: new Date().toISOString(),
+      }).eq("id", item.id);
+      toast.success(`+${quantidade} em ${item.codigo}`);
+    } else {
+      toast.warning(`Produto ${codigo.trim()} NÃO consta na remessa — bipagem registrada`);
+    }
 
     if (remessaAtual?.status === "aberta") {
       await supabase.from("remessas").update({ status: "em_conferencia", recebido_por: user.id }).eq("id", selected);
     }
 
-    toast.success(`+${quantidade} em ${item.codigo}`);
     setCodigo("");
     setQtd("1");
     setSubmitting(false);
@@ -210,6 +233,56 @@ export default function Conferencia() {
           </Table>
         </div>
       </Card>
+
+      {selected && (
+        <Card className="p-0 overflow-hidden border-border/50 shadow-card">
+          <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Histórico de Bipagem</h2>
+            </div>
+            <Badge variant="secondary">{bipagens.length} {bipagens.length === 1 ? "registro" : "registros"}</Badge>
+          </div>
+          <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-card z-10">
+                <TableRow>
+                  <TableHead>Data/Hora</TableHead>
+                  <TableHead>Código</TableHead>
+                  <TableHead className="text-right">Quantidade</TableHead>
+                  <TableHead>Usuário</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bipagens.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhuma bipagem ainda</TableCell></TableRow>
+                ) : bipagens.map((b) => {
+                  const naoConsta = !codigosRemessa.has(b.codigo);
+                  return (
+                    <TableRow key={b.id} className={naoConsta ? "bg-warning/10 hover:bg-warning/20" : ""}>
+                      <TableCell className="text-xs">{new Date(b.created_at).toLocaleString("pt-BR")}</TableCell>
+                      <TableCell className="font-mono text-xs">{b.codigo}</TableCell>
+                      <TableCell className="text-right font-semibold">{b.quantidade}</TableCell>
+                      <TableCell className="text-xs">{usuarios[b.user_id] ?? "—"}</TableCell>
+                      <TableCell>
+                        {naoConsta ? (
+                          <Badge className="bg-warning text-warning-foreground gap-1">
+                            <AlertOctagon className="h-3 w-3" />
+                            PRODUTO NÃO CONSTA NA REMESSA
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">OK</Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
 
       {selected && progresso.totalItens > 0 && (
         <div className="flex justify-end">
