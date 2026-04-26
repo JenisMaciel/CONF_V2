@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { fmtNum } from "@/lib/utils";
+import { DiffBadge } from "@/components/DiffBadge";
 
 export default function Divergencias() {
   const { user, isAdmin } = useAuth();
@@ -94,9 +96,11 @@ export default function Divergencias() {
                 <TableRow key={d.id} className={d.status === "ajustado" ? "" : "bg-destructive/5"}>
                   <TableCell className="font-mono text-xs">{d.codigo}</TableCell>
                   <TableCell>{d.descricao}</TableCell>
-                  <TableCell className="text-right">{d.qtd_esperada}</TableCell>
-                  <TableCell className="text-right">{d.qtd_conferida}</TableCell>
-                  <TableCell className={`text-right font-semibold ${d.diferenca < 0 ? "text-destructive" : "text-warning"}`}>{d.diferenca > 0 ? `+${d.diferenca}` : d.diferenca}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(d.qtd_esperada)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(d.qtd_conferida)}</TableCell>
+                  <TableCell className="text-right">
+                    <DiffBadge value={Number(d.diferenca)} />
+                  </TableCell>
                   <TableCell>
                     {d.status === "ajustado"
                       ? <Badge className="bg-success text-success-foreground">AJUSTADO</Badge>
@@ -124,7 +128,7 @@ export default function Divergencias() {
           {selected && (
             <div className="space-y-3 text-sm">
               <p><span className="text-muted-foreground">Código:</span> <span className="font-mono">{selected.codigo}</span></p>
-              <p><span className="text-muted-foreground">Diferença:</span> <span className="font-semibold">{selected.diferenca}</span></p>
+              <p><span className="text-muted-foreground">Diferença:</span> <span className="font-semibold">{fmtNum(selected.diferenca)}</span></p>
               <div>
                 <Label htmlFor="obs">Observação</Label>
                 <Textarea id="obs" value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Descreva o ajuste realizado..." className="mt-2" />

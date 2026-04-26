@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { ScanBarcode, CheckCircle2, Loader2, History, AlertOctagon } from "lucide-react";
 import { toast } from "sonner";
+import { fmtNum } from "@/lib/utils";
+import { DiffBadge, CountCell } from "@/components/DiffBadge";
 
 export default function Conferencia() {
   const { user } = useAuth();
@@ -166,7 +168,7 @@ export default function Conferencia() {
             <div>
               <p className="text-xs text-muted-foreground">Remessa</p>
               <p className="font-bold text-lg">{remessaAtual.numero}</p>
-              <p className="text-xs text-muted-foreground">{progresso.conferidos}/{progresso.totalItens} itens</p>
+              <p className="text-xs text-muted-foreground">{fmtNum(progresso.conferidos)}/{fmtNum(progresso.totalItens)} itens</p>
             </div>
             <div className="sm:col-span-2 flex flex-col justify-center">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -205,6 +207,7 @@ export default function Conferencia() {
                 <TableHead>Descrição</TableHead>
                 <TableHead className="text-right">Esperado</TableHead>
                 <TableHead className="text-right">Contado</TableHead>
+                <TableHead className="text-right">Diferença</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -212,12 +215,21 @@ export default function Conferencia() {
               {itens.map((i) => {
                 const ok = Number(i.qtd_conferida) === Number(i.qtd_esperada) && Number(i.qtd_esperada) > 0;
                 const div = Number(i.qtd_conferida) !== Number(i.qtd_esperada) && Number(i.qtd_conferida) > 0;
+                const dif = Number(i.qtd_conferida) - Number(i.qtd_esperada);
                 return (
                   <TableRow key={i.id} className={div ? "bg-destructive/10" : ok ? "bg-success/5" : ""}>
                     <TableCell className="font-mono text-xs">{i.codigo}</TableCell>
                     <TableCell>{i.descricao}</TableCell>
-                    <TableCell className="text-right">{i.qtd_esperada}</TableCell>
-                    <TableCell className="text-right font-semibold">{i.qtd_conferida}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtNum(i.qtd_esperada)}</TableCell>
+                    <TableCell className="text-right">
+                      <CountCell
+                        value={Number(i.qtd_conferida)}
+                        highlight={ok ? "ok" : div ? "danger" : "none"}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DiffBadge value={dif} />
+                    </TableCell>
                     <TableCell>
                       {ok ? <Badge className="bg-success text-success-foreground">OK</Badge>
                         : div ? <Badge variant="destructive">Divergente</Badge>
@@ -227,7 +239,7 @@ export default function Conferencia() {
                 );
               })}
               {itens.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-10">Selecione uma remessa</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Selecione uma remessa</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -241,7 +253,7 @@ export default function Conferencia() {
               <History className="h-5 w-5 text-primary" />
               <h2 className="font-semibold">Histórico de Bipagem</h2>
             </div>
-            <Badge variant="secondary">{bipagens.length} {bipagens.length === 1 ? "registro" : "registros"}</Badge>
+            <Badge variant="secondary">{fmtNum(bipagens.length)} {bipagens.length === 1 ? "registro" : "registros"}</Badge>
           </div>
           <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
             <Table>
@@ -263,7 +275,7 @@ export default function Conferencia() {
                     <TableRow key={b.id} className={naoConsta ? "bg-warning/10 hover:bg-warning/20" : ""}>
                       <TableCell className="text-xs">{new Date(b.created_at).toLocaleString("pt-BR")}</TableCell>
                       <TableCell className="font-mono text-xs">{b.codigo}</TableCell>
-                      <TableCell className="text-right font-semibold">{b.quantidade}</TableCell>
+                      <TableCell className="text-right font-semibold tabular-nums">{fmtNum(b.quantidade)}</TableCell>
                       <TableCell className="text-xs">{usuarios[b.user_id] ?? "—"}</TableCell>
                       <TableCell>
                         {naoConsta ? (

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { fmtNum } from "@/lib/utils";
 
 export default function Historico() {
   const { isAdmin } = useAuth();
@@ -71,8 +72,8 @@ export default function Historico() {
                 <TableRow key={r.id}>
                   <TableCell className="font-semibold">{r.numero}</TableCell>
                   <TableCell><Badge variant="secondary">{r.categoria}</Badge></TableCell>
-                  <TableCell className="text-right">{r.total_itens}</TableCell>
-                  <TableCell className="text-right">{r.total_qtd_esperada}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(r.total_itens)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(r.total_qtd_esperada)}</TableCell>
                   <TableCell className="text-xs">{r.recebida_em ? new Date(r.recebida_em).toLocaleString("pt-BR") : "—"}</TableCell>
                   <TableCell>
                     <Button size="sm" variant="outline" onClick={() => reabrir(r.id)}>

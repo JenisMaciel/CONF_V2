@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { fmtNum } from "@/lib/utils";
+import { DiffBadge, CountCell } from "@/components/DiffBadge";
 
 interface Remessa {
   id: string;
@@ -210,23 +212,23 @@ export default function Recebimento() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><Package className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Total Itens</span></div>
-          <p className="text-3xl font-bold mt-2">{stats.totalItens}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(stats.totalItens)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><ListChecks className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Total Esperado</span></div>
-          <p className="text-3xl font-bold mt-2">{stats.totalEsperado}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(stats.totalEsperado)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><ScanBarcode className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Total Contados</span></div>
-          <p className="text-3xl font-bold mt-2">{stats.totalContado}</p>
+          <p className="text-3xl font-bold mt-2">{fmtNum(stats.totalContado)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Conferidos OK</span></div>
-          <p className="text-3xl font-bold mt-2 text-success">{stats.conferidos}</p>
+          <p className="text-3xl font-bold mt-2 text-success">{fmtNum(stats.conferidos)}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Divergentes</span></div>
-          <p className="text-3xl font-bold mt-2 text-destructive">{stats.divergentes}</p>
+          <p className="text-3xl font-bold mt-2 text-destructive">{fmtNum(stats.divergentes)}</p>
         </Card>
       </div>
 
@@ -247,17 +249,17 @@ export default function Recebimento() {
         {/* Filtros de status em botões */}
         <div className="flex flex-wrap gap-2 p-4 border-b border-border bg-card/50">
           <Button size="sm" variant={statusFiltro === "todos" ? "default" : "outline"} onClick={() => setStatusFiltro("todos")}>
-            Todos ({itensComExtras.length})
+            Todos ({fmtNum(itensComExtras.length)})
           </Button>
           <Button size="sm" variant={statusFiltro === "ok" ? "default" : "outline"}
             className={statusFiltro === "ok" ? "bg-success text-success-foreground hover:bg-success/90" : ""}
             onClick={() => setStatusFiltro("ok")}>
-            <CheckCircle2 className="h-4 w-4 mr-1" /> OK ({stats.conferidos})
+            <CheckCircle2 className="h-4 w-4 mr-1" /> OK ({fmtNum(stats.conferidos)})
           </Button>
           <Button size="sm" variant={statusFiltro === "divergente" ? "default" : "outline"}
             className={statusFiltro === "divergente" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
             onClick={() => setStatusFiltro("divergente")}>
-            <AlertTriangle className="h-4 w-4 mr-1" /> Divergente ({stats.divergentes})
+            <AlertTriangle className="h-4 w-4 mr-1" /> Divergente ({fmtNum(stats.divergentes)})
           </Button>
           <Button size="sm" variant={statusFiltro === "pendente" ? "default" : "outline"} onClick={() => setStatusFiltro("pendente")}>
             Pendente
@@ -265,7 +267,7 @@ export default function Recebimento() {
           <Button size="sm" variant={statusFiltro === "nao_consta" ? "default" : "outline"}
             className={statusFiltro === "nao_consta" ? "bg-warning text-warning-foreground hover:bg-warning/90" : ""}
             onClick={() => setStatusFiltro("nao_consta")}>
-            <AlertOctagon className="h-4 w-4 mr-1" /> Não consta ({stats.naoConsta})
+            <AlertOctagon className="h-4 w-4 mr-1" /> Não consta ({fmtNum(stats.naoConsta)})
           </Button>
         </div>
 
@@ -300,8 +302,12 @@ export default function Recebimento() {
                             <AlertOctagon className="h-3 w-3" /> PRODUTO NÃO CONSTA NA REMESSA
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-semibold">{i.qtd_conferida}</TableCell>
-                        <TableCell className="text-right font-semibold text-warning">+{i.qtd_conferida}</TableCell>
+                        <TableCell className="text-right">
+                          <CountCell value={Number(i.qtd_conferida)} highlight="warn" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DiffBadge value={Number(i.qtd_conferida)} />
+                        </TableCell>
                         <TableCell className="text-xs">—</TableCell>
                         <TableCell className="text-xs">—</TableCell>
                         <TableCell>
@@ -314,10 +320,15 @@ export default function Recebimento() {
                     <TableRow key={i.id} className={divergente ? "bg-destructive/10 hover:bg-destructive/15" : ""}>
                       <TableCell className="font-mono text-xs">{i.codigo}</TableCell>
                       <TableCell>{i.descricao}</TableCell>
-                      <TableCell className="text-right">{i.qtd_esperada}</TableCell>
-                      <TableCell className="text-right font-semibold">{i.qtd_conferida}</TableCell>
-                      <TableCell className={`text-right font-semibold ${dif < 0 ? "text-destructive" : dif > 0 ? "text-warning" : ""}`}>
-                        {dif > 0 ? `+${dif}` : dif}
+                      <TableCell className="text-right tabular-nums">{fmtNum(i.qtd_esperada)}</TableCell>
+                      <TableCell className="text-right">
+                        <CountCell
+                          value={Number(i.qtd_conferida)}
+                          highlight={ok ? "ok" : divergente ? "danger" : "none"}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DiffBadge value={dif} />
                       </TableCell>
                       <TableCell className="text-xs">{i.recebido_por ? usuarios[i.recebido_por] ?? "—" : "—"}</TableCell>
                       <TableCell className="text-xs">{i.recebido_em ? new Date(i.recebido_em).toLocaleString("pt-BR") : "—"}</TableCell>
