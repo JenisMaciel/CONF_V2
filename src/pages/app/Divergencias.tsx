@@ -78,6 +78,7 @@ export default function Divergencias() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Remessa</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead className="text-right">Esperado</TableHead>
@@ -91,9 +92,13 @@ export default function Divergencias() {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-10">Nenhuma divergência</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-10">Nenhuma divergência</TableCell></TableRow>
               ) : filtered.map((d) => (
                 <TableRow key={d.id} className={d.status === "ajustado" ? "" : "bg-destructive/5"}>
+                  <TableCell className="text-xs">
+                    <div className="font-semibold">{d.remessa_numero ?? "—"}</div>
+                    <div className="text-muted-foreground">{d.remessa_categoria ?? ""}</div>
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{d.codigo}</TableCell>
                   <TableCell>{d.descricao}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmtNum(d.qtd_esperada)}</TableCell>
