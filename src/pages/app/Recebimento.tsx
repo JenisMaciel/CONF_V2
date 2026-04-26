@@ -229,7 +229,19 @@ export default function Recebimento() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><Package className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Total Itens</span></div>
-          <p className="text-3xl font-bold mt-2">{fmtNum(stats.totalItens)}</p>
+          <p className="text-3xl font-bold mt-2 tabular-nums">
+            <span>{fmtNum(stats.conferidos)}</span>
+            <span className="opacity-60">/{fmtNum(stats.totalItens)}</span>
+          </p>
+          <div className="mt-3 h-2 w-full rounded-full bg-foreground/10 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${stats.totalItens ? Math.min(100, (stats.conferidos / stats.totalItens) * 100) : 0}%`,
+                background: "linear-gradient(90deg, hsl(217 91% 60%), hsl(199 89% 56%))",
+              }}
+            />
+          </div>
         </Card>
         <Card className="p-5 border-border/50 shadow-card" style={cardStyle}>
           <div className="flex items-center gap-3"><ListChecks className="h-5 w-5 opacity-70" /><span className="text-sm opacity-80">Total Esperado</span></div>
