@@ -192,6 +192,9 @@ export default function Recebimento() {
 
   const marcarRecebida = async (id: string) => {
     await supabase.from("remessas").update({ status: "recebida", recebida_em: new Date().toISOString() }).eq("id", id);
+    setSelectedRemessa(null);
+    setItens([]);
+    setBipagens([]);
   };
 
   return (
