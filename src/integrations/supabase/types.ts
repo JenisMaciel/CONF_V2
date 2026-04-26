@@ -276,7 +276,7 @@ export type Database = {
       }
       remessas: {
         Row: {
-          categoria: Database["public"]["Enums"]["categoria_remessa"]
+          categoria: string
           created_at: string
           criado_por: string | null
           finalizada_em: string | null
@@ -290,7 +290,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          categoria: Database["public"]["Enums"]["categoria_remessa"]
+          categoria: string
           created_at?: string
           criado_por?: string | null
           finalizada_em?: string | null
@@ -304,7 +304,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          categoria?: Database["public"]["Enums"]["categoria_remessa"]
+          categoria?: string
           created_at?: string
           criado_por?: string | null
           finalizada_em?: string | null
@@ -356,7 +356,6 @@ export type Database = {
     }
     Enums: {
       app_role: "master" | "admin" | "user"
-      categoria_remessa: "HISENSE" | "TOSHIBA" | "MULTI" | "OPPO" | "ZTE"
       status_divergencia: "pendente" | "ajustado"
       status_remessa: "aberta" | "em_conferencia" | "finalizada" | "recebida"
     }
@@ -487,7 +486,6 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["master", "admin", "user"],
-      categoria_remessa: ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"],
       status_divergencia: ["pendente", "ajustado"],
       status_remessa: ["aberta", "em_conferencia", "finalizada", "recebida"],
     },
