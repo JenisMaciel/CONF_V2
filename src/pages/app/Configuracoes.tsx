@@ -73,7 +73,8 @@ export default function Configuracoes() {
     const { error } = await supabase.storage.from("app-assets").upload(path, file, { upsert: true });
     if (error) { toast.error(error.message); return; }
     const { data } = supabase.storage.from("app-assets").getPublicUrl(path);
-    await supabase.from("app_settings").update({ [field]: data.publicUrl, updated_at: new Date().toISOString() }).eq("id", 1);
+    const update: any = { [field]: data.publicUrl, updated_at: new Date().toISOString() };
+    await supabase.from("app_settings").update(update).eq("id", 1);
     toast.success("Imagem atualizada");
     refresh();
   };
