@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon } from "lucide-react";
+import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge, CountCell } from "@/components/DiffBadge";
+import { toast } from "sonner";
 
 interface Remessa {
   id: string;
