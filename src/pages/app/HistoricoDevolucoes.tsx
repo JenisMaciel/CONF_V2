@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Archive, Package, Search, Calendar } from "lucide-react";
+import { Archive, Package, Search, Calendar, ScanBarcode } from "lucide-react";
 
 const CATEGORIAS = ["HISENSE", "TOSHIBA", "MULTI", "OPPO", "ZTE"] as const;
 
@@ -31,10 +31,21 @@ interface Item {
   qtd_conferida: number;
 }
 
+interface Bipagem {
+  id: string;
+  remessa_id: string;
+  codigo: string;
+  quantidade: number;
+  user_id: string;
+  created_at: string;
+}
+
 export default function HistoricoDevolucoes() {
   const { isAdmin } = useAuth();
   const [remessas, setRemessas] = useState<Remessa[]>([]);
   const [itens, setItens] = useState<Item[]>([]);
+  const [bipagens, setBipagens] = useState<Bipagem[]>([]);
+  const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -49,10 +60,19 @@ export default function HistoricoDevolucoes() {
     setRemessas(rem ?? []);
     const ids = (rem ?? []).map((r) => r.id);
     if (ids.length) {
-      const { data: its } = await supabase.from("remessa_itens").select("*").in("remessa_id", ids);
+      const [{ data: its }, { data: bips }, { data: profs }] = await Promise.all([
+        supabase.from("remessa_itens").select("*").in("remessa_id", ids),
+        supabase.from("conferencias").select("*").in("remessa_id", ids).order("created_at", { ascending: false }),
+        supabase.from("profiles").select("user_id, display_name, email"),
+      ]);
       setItens(its ?? []);
+      setBipagens(bips ?? []);
+      const map: Record<string, string> = {};
+      profs?.forEach((p) => (map[p.user_id] = p.display_name || p.email));
+      setUsuarios(map);
     } else {
       setItens([]);
+      setBipagens([]);
     }
   };
 
@@ -75,17 +95,19 @@ export default function HistoricoDevolucoes() {
       if (dateTo && (!r.recebida_em || r.recebida_em > dateTo + "T23:59:59")) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        // busca no número da remessa OU em algum item desta remessa
+        // busca no número da remessa OU em algum item OU no histórico de bipagem
         if (r.numero.toLowerCase().includes(q)) return true;
         const itensDaRemessa = itens.filter((i) => i.remessa_id === r.id);
-        const match = itensDaRemessa.some(
+        const matchItem = itensDaRemessa.some(
           (i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)
         );
-        return match;
+        if (matchItem) return true;
+        const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
+        return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q));
       }
       return true;
     });
-  }, [remessas, itens, activeTab, dateFrom, dateTo, search]);
+  }, [remessas, itens, bipagens, activeTab, dateFrom, dateTo, search]);
 
   // Agrupa por categoria para os contadores das abas
   const countByCategoria = useMemo(() => {
@@ -102,6 +124,13 @@ export default function HistoricoDevolucoes() {
     if (!search.trim()) return lista;
     const q = search.toLowerCase();
     return lista.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
+  };
+
+  const bipagensFiltradas = (remessaId: string) => {
+    const lista = bipagens.filter((b) => b.remessa_id === remessaId);
+    if (!search.trim()) return lista;
+    const q = search.toLowerCase();
+    return lista.filter((b) => b.codigo.toLowerCase().includes(q));
   };
 
   return (
