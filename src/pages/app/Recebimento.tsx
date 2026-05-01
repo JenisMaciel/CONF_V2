@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +7,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2 } from "lucide-react";
+import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2, Upload, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge, CountCell } from "@/components/DiffBadge";
 import { toast } from "sonner";
+
+const ORIGENS = ["SUPER TERMINAIS", "EAD", "TORQUARTO", "TECA II", "CHIABTÃO", "OUTROS"] as const;
 
 interface Remessa {
   id: string;
@@ -54,6 +60,78 @@ export default function Recebimento() {
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>("todos");
   const selectedRef = useRef<string | null>(null);
   useEffect(() => { selectedRef.current = selectedRemessa; }, [selectedRemessa]);
+
+  // ---- Estado da NOVA REMESSA (importação) ----
+  const [novaProcesso, setNovaProcesso] = useState("");
+  const [novaNumero, setNovaNumero] = useState("");
+  const [novaQtdProcesso, setNovaQtdProcesso] = useState("");
+  const [novaOrigem, setNovaOrigem] = useState<string>("");
+  const [novaOrigemOutros, setNovaOrigemOutros] = useState("");
+  const [novaDivergencia, setNovaDivergencia] = useState<"sim" | "nao">("nao");
+  const [novaDivergenciaComentario, setNovaDivergenciaComentario] = useState("");
+  const [novaFile, setNovaFile] = useState<File | null>(null);
+  const [novaLoading, setNovaLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleCriarRemessa = async () => {
+    if (!novaProcesso.trim()) { toast.error("Informe o processo"); return; }
+    if (!novaNumero.trim()) { toast.error("Informe o número da remessa"); return; }
+    if (!novaOrigem) { toast.error("Selecione a origem"); return; }
+    if (novaOrigem === "OUTROS" && !novaOrigemOutros.trim()) { toast.error("Informe a origem (Outros)"); return; }
+    if (!novaFile) { toast.error("Selecione um arquivo XLSX"); return; }
+    if (novaDivergencia === "sim" && !novaDivergenciaComentario.trim()) {
+      toast.error("Informe o comentário da divergência"); return;
+    }
+
+    setNovaLoading(true);
+    try {
+      const buf = await novaFile.arrayBuffer();
+      const wb = XLSX.read(buf);
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
+      const itensImp = rows.map((r) => {
+        const codigo = String(r["CÓDIGO"] ?? r["CODIGO"] ?? r["Código"] ?? r["codigo"] ?? "").trim();
+        const descricao = String(r["DESCRIÇÃO"] ?? r["DESCRICAO"] ?? r["Descrição"] ?? r["descricao"] ?? "").trim();
+        const qtd = Number(r["QTDE"] ?? r["QTD"] ?? r["Qtde"] ?? r["qtd"] ?? 0);
+        return { codigo, descricao, qtd };
+      }).filter((i) => i.codigo);
+
+      if (!itensImp.length) { toast.error("Planilha sem itens (cabeçalho: CÓDIGO, DESCRIÇÃO, QTDE)"); setNovaLoading(false); return; }
+
+      const totalQtd = itensImp.reduce((s, i) => s + Number(i.qtd), 0);
+      const { data: remessa, error } = await supabase.from("remessas").insert({
+        numero: novaNumero.trim(),
+        categoria: novaProcesso.trim().toUpperCase() as any,
+        status: "aberta",
+        total_itens: itensImp.length,
+        total_qtd_esperada: totalQtd,
+        criado_por: user?.id,
+        qtd_processo: Number(novaQtdProcesso) || 0,
+        origem: novaOrigem,
+        origem_outros: novaOrigem === "OUTROS" ? novaOrigemOutros.trim() : null,
+        divergencia_recebimento: novaDivergencia === "sim",
+        divergencia_recebimento_comentario: novaDivergencia === "sim" ? novaDivergenciaComentario.trim() : null,
+      } as any).select().single();
+      if (error) throw error;
+
+      const { error: e2 } = await supabase.from("remessa_itens").insert(
+        itensImp.map((i) => ({ remessa_id: remessa.id, codigo: i.codigo, descricao: i.descricao, qtd_esperada: i.qtd }))
+      );
+      if (e2) throw e2;
+
+      toast.success(`Remessa criada com ${itensImp.length} itens`);
+      setNovaProcesso(""); setNovaNumero(""); setNovaQtdProcesso(""); setNovaOrigem("");
+      setNovaOrigemOutros(""); setNovaDivergencia("nao"); setNovaDivergenciaComentario("");
+      setNovaFile(null);
+      if (fileRef.current) fileRef.current.value = "";
+      await load();
+      setSelectedRemessa(remessa.id);
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao criar remessa");
+    } finally {
+      setNovaLoading(false);
+    }
+  };
 
   const load = async () => {
     const { data } = await supabase
@@ -242,7 +320,86 @@ export default function Recebimento() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* NOVA REMESSA — admin */}
+      {isAdmin && (
+        <Card className="p-6 border-border/50 shadow-card space-y-4">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold">Nova Remessa</h2>
+            <span className="text-xs text-muted-foreground">Preencha os dados antes de anexar a planilha</span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label>Processo <span className="text-destructive">*</span></Label>
+              <Input className="mt-2" value={novaProcesso} onChange={(e) => setNovaProcesso(e.target.value)} placeholder="Ex: HISENSE-2025-04" />
+            </div>
+            <div>
+              <Label>Número da Remessa <span className="text-destructive">*</span></Label>
+              <Input className="mt-2" value={novaNumero} onChange={(e) => setNovaNumero(e.target.value)} placeholder="Ex: 1971131351" />
+            </div>
+            <div>
+              <Label>Qtde do Processo</Label>
+              <Input className="mt-2" type="number" min={0} value={novaQtdProcesso} onChange={(e) => setNovaQtdProcesso(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <Label>Origem <span className="text-destructive">*</span></Label>
+              <Select value={novaOrigem} onValueChange={setNovaOrigem}>
+                <SelectTrigger className="mt-2"><SelectValue placeholder="Selecione a origem" /></SelectTrigger>
+                <SelectContent>
+                  {ORIGENS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {novaOrigem === "OUTROS" && (
+              <div>
+                <Label>Origem (Outros) <span className="text-destructive">*</span></Label>
+                <Input className="mt-2" value={novaOrigemOutros} onChange={(e) => setNovaOrigemOutros(e.target.value)} placeholder="Informe a origem" />
+              </div>
+            )}
+            <div>
+              <Label>Divergência</Label>
+              <RadioGroup value={novaDivergencia} onValueChange={(v: any) => setNovaDivergencia(v)} className="flex gap-4 mt-3">
+                <div className="flex items-center gap-2"><RadioGroupItem value="nao" id="div-nao" /><Label htmlFor="div-nao" className="cursor-pointer">Não</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="sim" id="div-sim" /><Label htmlFor="div-sim" className="cursor-pointer">Sim</Label></div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          {novaDivergencia === "sim" && (
+            <div>
+              <Label>Comentários da divergência <span className="text-destructive">*</span></Label>
+              <Textarea className="mt-2" rows={3} value={novaDivergenciaComentario} onChange={(e) => setNovaDivergenciaComentario(e.target.value)} placeholder="Descreva a divergência..." />
+            </div>
+          )}
+
+          <div>
+            <Label>Arquivo XLSX <span className="text-destructive">*</span></Label>
+            <div className="mt-2 border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors">
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setNovaFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+                id="nova-file-input"
+              />
+              <label htmlFor="nova-file-input" className="cursor-pointer block">
+                <FileSpreadsheet className="h-8 w-8 mx-auto text-muted-foreground" />
+                <p className="mt-2 text-sm font-medium">{novaFile ? novaFile.name : "Clique para selecionar planilha"}</p>
+                <p className="text-xs text-muted-foreground mt-1">Colunas: CÓDIGO, DESCRIÇÃO, QTDE</p>
+              </label>
+            </div>
+          </div>
+
+          <Button onClick={handleCriarRemessa} disabled={novaLoading} className="gradient-primary text-primary-foreground shadow-glow">
+            {novaLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            Criar Remessa
+          </Button>
+        </Card>
+      )}
+
+
       <div className="flex flex-wrap gap-3">
         <Select value={processo} onValueChange={setProcesso}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="Processo" /></SelectTrigger>

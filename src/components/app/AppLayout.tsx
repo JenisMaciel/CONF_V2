@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { Button } from "@/components/ui/button";
 import {
-  PackageCheck, ScanBarcode, Database, AlertTriangle, History,
+  PackageCheck, ScanBarcode, AlertTriangle, History,
   Settings, LogOut, Menu, X, PackageOpen, Archive
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,8 +18,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/app", label: "Recebimento", icon: PackageOpen },
-  { to: "/app/conferencia", label: "Conferência", icon: ScanBarcode },
-  { to: "/app/dados", label: "Dados", icon: Database, adminOnly: true },
+  { to: "/app/conferencia", label: "Processo em Conferência", icon: ScanBarcode },
   { to: "/app/divergencias", label: "Gestão de Divergência", icon: AlertTriangle, adminOnly: true },
   { to: "/app/historico", label: "Histórico", icon: History, adminOnly: true },
   { to: "/app/processos-conferidos", label: "Processos Conferidos", icon: Archive, adminOnly: true },

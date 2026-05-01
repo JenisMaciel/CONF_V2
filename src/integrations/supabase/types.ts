@@ -197,6 +197,36 @@ export type Database = {
         }
         Relationships: []
       }
+      materiais_amostras: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          id: string
+          ordem: number
+          quantidade: number
+          remessa_id: string
+          updated_at: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          ordem?: number
+          quantidade?: number
+          remessa_id: string
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          ordem?: number
+          quantidade?: number
+          remessa_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -277,11 +307,22 @@ export type Database = {
       remessas: {
         Row: {
           categoria: string
+          conferencia_divergencia: boolean
+          conferencia_divergencia_comentario: string | null
+          conferencia_inicio: string | null
+          conferencia_termino: string | null
+          conferencia_turno_fim: string | null
+          conferencia_turno_inicio: string | null
           created_at: string
           criado_por: string | null
+          divergencia_recebimento: boolean
+          divergencia_recebimento_comentario: string | null
           finalizada_em: string | null
           id: string
           numero: string
+          origem: string | null
+          origem_outros: string | null
+          qtd_processo: number
           recebida_em: string | null
           recebido_por: string | null
           status: Database["public"]["Enums"]["status_remessa"]
@@ -291,11 +332,22 @@ export type Database = {
         }
         Insert: {
           categoria: string
+          conferencia_divergencia?: boolean
+          conferencia_divergencia_comentario?: string | null
+          conferencia_inicio?: string | null
+          conferencia_termino?: string | null
+          conferencia_turno_fim?: string | null
+          conferencia_turno_inicio?: string | null
           created_at?: string
           criado_por?: string | null
+          divergencia_recebimento?: boolean
+          divergencia_recebimento_comentario?: string | null
           finalizada_em?: string | null
           id?: string
           numero: string
+          origem?: string | null
+          origem_outros?: string | null
+          qtd_processo?: number
           recebida_em?: string | null
           recebido_por?: string | null
           status?: Database["public"]["Enums"]["status_remessa"]
@@ -305,11 +357,22 @@ export type Database = {
         }
         Update: {
           categoria?: string
+          conferencia_divergencia?: boolean
+          conferencia_divergencia_comentario?: string | null
+          conferencia_inicio?: string | null
+          conferencia_termino?: string | null
+          conferencia_turno_fim?: string | null
+          conferencia_turno_inicio?: string | null
           created_at?: string
           criado_por?: string | null
+          divergencia_recebimento?: boolean
+          divergencia_recebimento_comentario?: string | null
           finalizada_em?: string | null
           id?: string
           numero?: string
+          origem?: string | null
+          origem_outros?: string | null
+          qtd_processo?: number
           recebida_em?: string | null
           recebido_por?: string | null
           status?: Database["public"]["Enums"]["status_remessa"]
