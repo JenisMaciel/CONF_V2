@@ -29,7 +29,32 @@ export default function Recebimento() {
   const [novaDivergenciaComentario, setNovaDivergenciaComentario] = useState("");
   const [novaFile, setNovaFile] = useState<File | null>(null);
   const [novaLoading, setNovaLoading] = useState(false);
+  const [previewItens, setPreviewItens] = useState<{ codigo: string; descricao: string; qtd: number }[]>([]);
+  const [previewError, setPreviewError] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (file: File | null) => {
+    setNovaFile(file);
+    setPreviewItens([]);
+    setPreviewError("");
+    if (!file) return;
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf);
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
+      const itens = rows.map((r) => {
+        const codigo = String(r["CÓDIGO"] ?? r["CODIGO"] ?? r["Código"] ?? r["codigo"] ?? "").trim();
+        const descricao = String(r["DESCRIÇÃO"] ?? r["DESCRICAO"] ?? r["Descrição"] ?? r["descricao"] ?? "").trim();
+        const qtd = Number(r["QTDE"] ?? r["QTD"] ?? r["Qtde"] ?? r["qtd"] ?? 0);
+        return { codigo, descricao, qtd };
+      }).filter((i) => i.codigo);
+      if (!itens.length) setPreviewError("Planilha sem itens válidos (cabeçalho: CÓDIGO, DESCRIÇÃO, QTDE)");
+      setPreviewItens(itens);
+    } catch (e: any) {
+      setPreviewError(e.message ?? "Erro ao ler planilha");
+    }
+  };
 
   const load = async () => {
     const { data } = await supabase
