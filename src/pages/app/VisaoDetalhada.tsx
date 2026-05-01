@@ -312,10 +312,13 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
       <Card className="p-6 border-border/50 shadow-card">
         <h2 className="font-semibold mb-8">Linha do Tempo do Processo</h2>
         <div className="relative">
-          <div className="grid grid-cols-3 gap-4 relative">
+          <div className={`grid gap-4 relative ${emConferencia ? "grid-cols-4" : "grid-cols-3"}`}>
             {/* Conectores */}
-            <div className="absolute top-8 left-[16.66%] right-[16.66%] h-0.5 flex">
+            <div className={`absolute top-8 h-0.5 flex ${emConferencia ? "left-[12.5%] right-[12.5%]" : "left-[16.66%] right-[16.66%]"}`}>
               <div className={`flex-1 ${conferenciaIniciada ? "bg-success" : "bg-border"}`} />
+              {emConferencia && (
+                <div className="flex-1 bg-primary animate-pulse" />
+              )}
               <div className={`flex-1 ${concluido ? "bg-primary" : "bg-border"}`} />
             </div>
 
@@ -328,7 +331,6 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
               done={!!row.recebida_em}
               labelTop="Tempo até início"
               valueTop={row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—"}
-              labelTopAlign="right"
             />
             <TimelineNode
               icon={<PlayCircle className="h-7 w-7" />}
@@ -337,10 +339,25 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
               date={fmtDateTime(row.conferencia_inicio)}
               description="Conferência iniciada"
               done={conferenciaIniciada}
-              labelTop="Tempo de conferência"
-              valueTop={row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"}
-              labelTopAlign="right"
+              labelTop={emConferencia ? "Tempo decorrido" : "Tempo de conferência"}
+              valueTop={
+                emConferencia
+                  ? fmtDuration(tempoAndamentoMs)
+                  : row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"
+              }
             />
+            {emConferencia && (
+              <TimelineNode
+                icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                tone="primary"
+                title="CONFERÊNCIA EM ANDAMENTO"
+                date={`Decorrido: ${fmtDuration(tempoAndamentoMs)}`}
+                description={`${row.conferido}/${row.total_qtd_esperada} itens conferidos`}
+                done
+                pulsing
+                statusLabel="Em andamento"
+              />
+            )}
             <TimelineNode
               icon={<CheckCircle2 className="h-7 w-7" />}
               tone="success"
