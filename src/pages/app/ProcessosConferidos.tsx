@@ -299,18 +299,9 @@ export default function ProcessosConferidos() {
             <span className="text-muted-foreground text-sm">até</span>
             <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" />
           </div>
-          <Button variant="outline" onClick={() => { setSearch(""); setProdutoSearch(""); setDateFrom(""); setDateTo(""); setProcessoFilter("TODOS"); }}>
+          <Button variant="outline" onClick={() => { setSearch(""); setProdutoSearchByRemessa({}); setDateFrom(""); setDateTo(""); setProcessoFilter("TODOS"); }}>
             Limpar
           </Button>
-        </div>
-        <div className="relative">
-          <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-          <Input
-            placeholder="🔎 Pesquisar produto / descrição (filtra itens da remessa e do histórico de conferência)..."
-            value={produtoSearch}
-            onChange={(e) => setProdutoSearch(e.target.value)}
-            className="pl-9 border-primary/40 focus-visible:ring-primary"
-          />
         </div>
       </Card>
 
