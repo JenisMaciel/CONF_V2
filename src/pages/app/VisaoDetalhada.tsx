@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft,
+  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft, Loader2,
 } from "lucide-react";
 
 const fmtDateTime = (s?: string | null) => {
