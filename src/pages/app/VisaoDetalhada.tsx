@@ -405,25 +405,34 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           ];
 
           return (
-            <div className="flex items-start w-full pb-2">
+            <div className="flex items-start w-full pb-2 pt-8">
               {nodes.map((n, i) => (
                 <div key={i} className={cn("flex items-start", i < nodes.length - 1 ? "flex-1" : "")}>
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
                     <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64, marginLeft: -58, marginRight: -58 }}>
-                      <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
-                      <p className={cn("text-sm font-semibold tabular-nums",
-                        segments[i].color === "success" ? "text-success" : "text-primary"
-                      )}>
-                        {segments[i].value}
-                      </p>
-                      <div className={cn(
-                        "absolute left-0 right-0 h-0.5",
-                        segments[i].active
-                          ? segments[i].color === "success" ? "bg-success" : "bg-primary"
-                          : "bg-border",
-                        segments[i].pulsing && "animate-pulse"
-                      )} style={{ top: 32 }} />
+                      {/* Label acima da linha */}
+                      <div className="absolute left-0 right-0 -top-7 flex flex-col items-center">
+                        <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
+                        <p className={cn("text-sm font-semibold tabular-nums leading-tight",
+                          segments[i].color === "success" ? "text-success" : "text-primary"
+                        )}>
+                          {segments[i].value}
+                        </p>
+                      </div>
+                      {/* Linha neon centralizada nos círculos (h=64, centro=32) */}
+                      <div
+                        className={cn(
+                          "absolute left-0 right-0 h-[2px] rounded-full",
+                          segments[i].active
+                            ? segments[i].color === "success"
+                              ? "bg-success shadow-[0_0_8px_hsl(var(--success)),0_0_16px_hsl(var(--success)/0.6)]"
+                              : "bg-primary shadow-[0_0_8px_hsl(var(--primary)),0_0_16px_hsl(var(--primary)/0.6)]"
+                            : "bg-border",
+                          segments[i].pulsing && "animate-pulse"
+                        )}
+                        style={{ top: 31 }}
+                      />
                     </div>
                   )}
                 </div>
@@ -507,7 +516,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={-12}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--primary))"
-                data={[55, 52, 50, 53, 49, 47, 48]}
+                data={[55, 48, 58, 45, 60, 47, 52, 44, 50]}
               />
               <PerfCard
                 label="Taxa de sucesso"
@@ -515,7 +524,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={2.4}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--success))"
-                data={[96, 97, 98, 97.5, 98, 98.5, 98.6]}
+                data={[96, 99, 95, 98.5, 96.5, 99.2, 97, 98.8, 98.6]}
               />
               <PerfCard
                 label="Processos concluídos"
@@ -523,7 +532,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={6}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--primary))"
-                data={[18, 19, 20, 22, 21, 23, 24]}
+                data={[18, 22, 17, 24, 19, 25, 21, 26, 24]}
                 trendIsAbsolute
               />
             </div>
@@ -712,15 +721,32 @@ function PerfCard({
   trendIsAbsolute?: boolean;
 }) {
   const positive = trend >= 0;
-  // Build sparkline path
-  const w = 100, h = 30;
+  // Build smooth wavy sparkline path (Catmull-Rom -> Bezier)
+  const w = 100, h = 32;
+  const padY = 4;
   const min = Math.min(...data), max = Math.max(...data);
   const range = max - min || 1;
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * h;
-    return `${x},${y}`;
-  }).join(" ");
+  const pts = data.map((v, i) => ({
+    x: (i / (data.length - 1)) * w,
+    y: padY + (h - padY * 2) - ((v - min) / range) * (h - padY * 2),
+  }));
+
+  // Smooth curve using cubic bezier between points
+  let d = `M ${pts[0].x},${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const t = 0.2;
+    const c1x = p1.x + (p2.x - p0.x) * t;
+    const c1y = p1.y + (p2.y - p0.y) * t;
+    const c2x = p2.x - (p3.x - p1.x) * t;
+    const c2y = p2.y - (p3.y - p1.y) * t;
+    d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y}`;
+  }
+  const area = `${d} L ${w},${h} L 0,${h} Z`;
+  const gradId = `pgrad-${label.replace(/\s+/g, "-")}`;
 
   return (
     <div className="rounded-lg border border-border/50 bg-card/40 p-3 flex flex-col">
@@ -730,8 +756,23 @@ function PerfCard({
         {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {positive ? "+" : ""}{trendIsAbsolute ? trend : `${trend}%`} <span className="text-muted-foreground">{trendLabel}</span>
       </p>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-8 mt-2" preserveAspectRatio="none">
-        <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} />
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-10 mt-2 overflow-visible" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.45" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill={`url(#${gradId})`} />
+        <path
+          d={d}
+          fill="none"
+          stroke={color}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ filter: `drop-shadow(0 0 3px ${color}) drop-shadow(0 0 6px ${color})` }}
+        />
       </svg>
     </div>
   );
@@ -778,15 +819,21 @@ function TimelineNode({
   done: boolean;
   pulsing?: boolean;
 }) {
-  const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
+  const ring = tone === "success"
+    ? "bg-success/15 text-success border-success"
+    : "bg-primary/15 text-primary border-primary";
+  const glow = tone === "success"
+    ? "shadow-[0_0_12px_hsl(var(--success)/0.9),0_0_28px_hsl(var(--success)/0.5),inset_0_0_10px_hsl(var(--success)/0.25)]"
+    : "shadow-[0_0_12px_hsl(var(--primary)/0.9),0_0_28px_hsl(var(--primary)/0.5),inset_0_0_10px_hsl(var(--primary)/0.25)]";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
     <div className="flex flex-col items-center text-center w-[180px] shrink-0">
       <div className={cn(
-        "h-16 w-16 rounded-full border-2 flex items-center justify-center",
+        "h-16 w-16 rounded-full border-2 flex items-center justify-center bg-background",
         ring,
+        done && glow,
         !done && "opacity-50",
-        pulsing && "animate-pulse shadow-glow"
+        pulsing && "animate-pulse"
       )}>
         {icon}
       </div>
