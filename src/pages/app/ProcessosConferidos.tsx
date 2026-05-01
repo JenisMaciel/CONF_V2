@@ -380,12 +380,21 @@ export default function ProcessosConferidos() {
                   <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => abrirEnvioEmail(r)}>
                     <Mail className="h-4 w-4 mr-1" /> Enviar por e-mail
                   </Button>
+                  <div className="relative flex-1 min-w-[220px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+                    <Input
+                      placeholder="🔎 Pesquisar produto / descrição nesta remessa..."
+                      value={produtoSearchByRemessa[r.id] || ""}
+                      onChange={(e) => setProdutoSearchByRemessa((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                      className="pl-9 h-9 border-primary/40 focus-visible:ring-primary"
+                    />
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto border-t border-border/50">
                   <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 flex items-center gap-2">
                     <Package className="h-3.5 w-3.5" /> Itens da remessa
-                    {(search.trim() || produtoSearch.trim()) && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
+                    {(search.trim() || (produtoSearchByRemessa[r.id] || "").trim()) && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
                       <Badge variant="outline" className="ml-1">filtrado</Badge>
                     )}
                   </div>
