@@ -721,15 +721,32 @@ function PerfCard({
   trendIsAbsolute?: boolean;
 }) {
   const positive = trend >= 0;
-  // Build sparkline path
-  const w = 100, h = 30;
+  // Build smooth wavy sparkline path (Catmull-Rom -> Bezier)
+  const w = 100, h = 32;
+  const padY = 4;
   const min = Math.min(...data), max = Math.max(...data);
   const range = max - min || 1;
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * h;
-    return `${x},${y}`;
-  }).join(" ");
+  const pts = data.map((v, i) => ({
+    x: (i / (data.length - 1)) * w,
+    y: padY + (h - padY * 2) - ((v - min) / range) * (h - padY * 2),
+  }));
+
+  // Smooth curve using cubic bezier between points
+  let d = `M ${pts[0].x},${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const t = 0.2;
+    const c1x = p1.x + (p2.x - p0.x) * t;
+    const c1y = p1.y + (p2.y - p0.y) * t;
+    const c2x = p2.x - (p3.x - p1.x) * t;
+    const c2y = p2.y - (p3.y - p1.y) * t;
+    d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y}`;
+  }
+  const area = `${d} L ${w},${h} L 0,${h} Z`;
+  const gradId = `pgrad-${label.replace(/\s+/g, "-")}`;
 
   return (
     <div className="rounded-lg border border-border/50 bg-card/40 p-3 flex flex-col">
@@ -739,8 +756,23 @@ function PerfCard({
         {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {positive ? "+" : ""}{trendIsAbsolute ? trend : `${trend}%`} <span className="text-muted-foreground">{trendLabel}</span>
       </p>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-8 mt-2" preserveAspectRatio="none">
-        <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} />
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-10 mt-2 overflow-visible" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.45" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill={`url(#${gradId})`} />
+        <path
+          d={d}
+          fill="none"
+          stroke={color}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ filter: `drop-shadow(0 0 3px ${color}) drop-shadow(0 0 6px ${color})` }}
+        />
       </svg>
     </div>
   );
