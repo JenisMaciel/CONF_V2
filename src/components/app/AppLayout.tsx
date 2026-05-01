@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { Button } from "@/components/ui/button";
 import {
-  PackageCheck, ScanBarcode, Database, AlertTriangle, History,
+  PackageCheck, ScanBarcode, AlertTriangle, History,
   Settings, LogOut, Menu, X, PackageOpen, Archive
 } from "lucide-react";
 import { cn } from "@/lib/utils";
