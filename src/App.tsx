@@ -10,7 +10,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import AppLayout from "./components/app/AppLayout";
 import Recebimento from "./pages/app/Recebimento";
 import Conferencia from "./pages/app/Conferencia";
-import Dados from "./pages/app/Dados";
 import Divergencias from "./pages/app/Divergencias";
 import Historico from "./pages/app/Historico";
 import ProcessosConferidos from "./pages/app/ProcessosConferidos";
@@ -31,7 +30,7 @@ const App = () => (
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<Recebimento />} />
               <Route path="conferencia" element={<Conferencia />} />
-              <Route path="dados" element={<Dados />} />
+              
               <Route path="divergencias" element={<Divergencias />} />
               <Route path="historico" element={<Historico />} />
               <Route path="processos-conferidos" element={<ProcessosConferidos />} />
