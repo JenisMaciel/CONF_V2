@@ -95,20 +95,29 @@ export default function Workflow() {
               ) : remessas.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>
-                    {isAdmin ? (
-                      <Input
-                        type="number" min={1}
-                        defaultValue={r.prioridade}
-                        disabled={savingId === r.id}
-                        onBlur={(e) => {
-                          const v = Number(e.target.value);
-                          if (v && v !== r.prioridade) updatePrioridade(r.id, v);
-                        }}
-                        className="w-20"
-                      />
-                    ) : (
-                      <Badge variant="outline">{r.prioridade}</Badge>
-                    )}
+                    {(() => {
+                      const p = Number(r.prioridade);
+                      const cls =
+                        p === 0 ? "bg-red-600 text-white border-red-700 font-bold dark:bg-red-700"
+                        : p === 1 ? "bg-red-300 text-red-950 border-red-400 font-semibold dark:bg-red-400/80 dark:text-red-950"
+                        : p === 2 ? "bg-yellow-300 text-yellow-950 border-yellow-400 font-semibold dark:bg-yellow-400/80 dark:text-yellow-950"
+                        : p === 3 ? "bg-green-400 text-green-950 border-green-500 font-semibold dark:bg-green-500/80 dark:text-green-950"
+                        : "";
+                      return isAdmin ? (
+                        <Input
+                          type="number" min={0}
+                          defaultValue={r.prioridade}
+                          disabled={savingId === r.id}
+                          onBlur={(e) => {
+                            const v = Number(e.target.value);
+                            if (!Number.isNaN(v) && v !== r.prioridade) updatePrioridade(r.id, v);
+                          }}
+                          className={`w-20 ${cls}`}
+                        />
+                      ) : (
+                        <Badge variant="outline" className={cls}>{r.prioridade}</Badge>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
                   <TableCell>{r.categoria}</TableCell>
