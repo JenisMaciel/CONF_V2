@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fmtNum } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ type Row = {
   total_itens: number;
   total_qtd_esperada: number;
   conferido: number;
+  skus_conferidos: number;
   divergencias: number;
   created_at: string;
   recebida_em: string | null;
@@ -68,12 +70,17 @@ export default function VisaoDetalhada() {
       .select("id, numero, categoria, status, origem, total_itens, total_qtd_esperada, created_at, recebida_em, conferencia_inicio, finalizada_em, criado_por, recebido_por, conferencia_divergencia_comentario")
       .order("created_at", { ascending: false });
 
-    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade, user_id");
+    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade, user_id, codigo");
     const conferidoMap = new Map<string, number>();
     const userMap = new Map<string, string>();
+    const skuSetMap = new Map<string, Set<string>>();
     (confs ?? []).forEach((c: any) => {
       conferidoMap.set(c.remessa_id, (conferidoMap.get(c.remessa_id) ?? 0) + Number(c.quantidade || 0));
       if (c.user_id) userMap.set(c.remessa_id, c.user_id);
+      if (c.codigo) {
+        if (!skuSetMap.has(c.remessa_id)) skuSetMap.set(c.remessa_id, new Set());
+        skuSetMap.get(c.remessa_id)!.add(String(c.codigo));
+      }
     });
 
     const { data: divs } = await supabase.from("divergencias").select("remessa_id");
@@ -105,6 +112,7 @@ export default function VisaoDetalhada() {
         total_itens: r.total_itens,
         total_qtd_esperada: r.total_qtd_esperada,
         conferido: conferidoMap.get(r.id) ?? 0,
+        skus_conferidos: skuSetMap.get(r.id)?.size ?? 0,
         divergencias: divMap.get(r.id) ?? 0,
         created_at: r.created_at,
         recebida_em: recebido,
@@ -395,12 +403,12 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           }
 
           return (
-            <div className="flex items-start w-full">
+            <div className="flex items-start w-full pb-32">
               {nodes.map((n, i) => (
                 <div key={i} className="flex items-start flex-1 last:flex-none">
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center min-w-0 px-2 relative" style={{ height: 64 }}>
+                    <div className="flex-1 flex flex-col items-center min-w-0 relative" style={{ height: 64 }}>
                       <p className="text-xs text-muted-foreground">{segments[i].label}</p>
                       <p className={`text-sm font-semibold tabular-nums ${segments[i].color === "success" ? "text-success" : "text-primary"}`}>
                         {segments[i].value}
@@ -438,9 +446,18 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           <Card className="p-6 border-border/50 shadow-card">
             <h3 className="font-semibold mb-4">Resumo do Processo</h3>
             <div className="space-y-3 text-sm">
-              <Row2 label="Itens conferidos:" value={String(row.conferido)} />
-              <Row2 label="Itens conferidos com sucesso:" value={String(Math.max(0, row.conferido - row.divergencias))} highlight="success" />
-              <Row2 label="Itens com divergência:" value={String(row.divergencias)} highlight={row.divergencias > 0 ? "destructive" : undefined} />
+              <RowSplit
+                label="SKUs conferidos:"
+                current={row.skus_conferidos}
+                total={row.total_itens}
+              />
+              <RowSplit
+                label="Quantidade conferida:"
+                current={row.conferido}
+                total={row.total_qtd_esperada}
+              />
+              <Row2 label="Itens conferidos com sucesso:" value={fmtNum(Math.max(0, row.conferido - row.divergencias))} highlight="success" />
+              <Row2 label="Itens com divergência:" value={fmtNum(row.divergencias)} highlight={row.divergencias > 0 ? "destructive" : undefined} />
               <Row2 label="Taxa de sucesso:" value={`${taxaSucesso.toFixed(0)}%`} highlight="success" />
             </div>
           </Card>
@@ -469,6 +486,20 @@ function Row2({ label, value, highlight }: { label: string; value: string; highl
   );
 }
 
+function RowSplit({ label, current, total }: { label: string; current: number; total: number }) {
+  const complete = current >= total && total > 0;
+  const colorCurrent = complete ? "text-success" : "text-warning";
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="tabular-nums font-semibold">
+        <span className={colorCurrent}>{fmtNum(current)}</span>
+        <span className="text-muted-foreground">/{fmtNum(total)}</span>
+      </span>
+    </div>
+  );
+}
+
 function TimelineNode({
   icon, tone, title, date, description, done, labelTop, valueTop, pulsing, statusLabel: customStatus,
 }: {
@@ -487,16 +518,18 @@ function TimelineNode({
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
-    <div className="flex flex-col items-center text-center w-[160px] shrink-0">
+    <div className="flex flex-col items-center text-center w-16 shrink-0 relative">
       <div className={`h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
-      <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
-      <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
-      <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
-      <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
-        {customStatus ?? (done ? "Concluído" : "Pendente")}
-      </Badge>
+      <div className="absolute top-[68px] left-1/2 -translate-x-1/2 w-[180px] flex flex-col items-center">
+        <p className={`text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
+        <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
+        <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
+          {customStatus ?? (done ? "Concluído" : "Pendente")}
+        </Badge>
+      </div>
     </div>
   );
 }
