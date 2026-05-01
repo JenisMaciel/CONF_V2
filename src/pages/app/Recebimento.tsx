@@ -11,8 +11,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Upload, FileSpreadsheet } from "lucide-react";
+import { Loader2, Upload, FileSpreadsheet, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
+async function excluirRemessaCascata(id: string) {
+  await supabase.from("conferencias").delete().eq("remessa_id", id);
+  await supabase.from("materiais_amostras").delete().eq("remessa_id", id);
+  await supabase.from("remessa_itens").delete().eq("remessa_id", id);
+  return supabase.from("remessas").delete().eq("id", id);
+}
 
 const ORIGENS = ["SUPER TERMINAIS", "EAD", "TORQUARTO", "TECA II", "CHIABTÃO", "OUTROS"] as const;
 
@@ -252,11 +259,12 @@ export default function Recebimento() {
                 <TableHead>Origem</TableHead>
                 <TableHead className="text-right">Itens</TableHead>
                 <TableHead>Status</TableHead>
+                {isAdmin && <TableHead className="text-right">Ações</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {remessas.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">Nenhuma remessa</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-10">Nenhuma remessa</TableCell></TableRow>
               ) : remessas.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</TableCell>
@@ -265,6 +273,20 @@ export default function Recebimento() {
                   <TableCell className="text-xs">{r.origem ?? "—"}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.total_itens}</TableCell>
                   <TableCell><Badge variant="secondary">{r.status}</Badge></TableCell>
+                  {isAdmin && (
+                    <TableCell className="text-right">
+                      {r.status !== "finalizada" ? (
+                        <Button size="sm" variant="ghost" title="Excluir remessa"
+                          onClick={async () => {
+                            if (!confirm(`Excluir remessa ${r.numero}? Essa ação não pode ser desfeita.`)) return;
+                            const { error } = await excluirRemessaCascata(r.id);
+                            if (error) toast.error(error.message); else { toast.success("Remessa excluída"); load(); }
+                          }}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      ) : <span className="text-xs text-muted-foreground">—</span>}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

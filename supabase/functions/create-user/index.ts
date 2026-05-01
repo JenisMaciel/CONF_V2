@@ -44,9 +44,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: createErr.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Trigger handle_new_user já criou role 'user'. Se for admin, adiciona.
+    // Trigger handle_new_user já criou role 'user'. Adiciona admin/master se necessário (master só por outro master)
     if (role === "admin") {
       await admin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
+    } else if (role === "master") {
+      const isMaster = roles?.some((r) => r.role === "master");
+      if (isMaster) await admin.from("user_roles").insert({ user_id: created.user.id, role: "master" });
     }
 
     return new Response(JSON.stringify({ ok: true, user: created.user }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
