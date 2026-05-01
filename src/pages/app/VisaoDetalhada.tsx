@@ -298,12 +298,12 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; totalLabel: string; taxaSucesso: number; copyNumero: () => void }) {
   return (
     <Panel className="relative overflow-hidden p-[18px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_30%,hsl(var(--primary)/0.16),transparent_34%),radial-gradient(circle_at_93%_70%,hsl(var(--success)/0.12),transparent_24%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_32%,hsl(var(--primary)/0.20),transparent_34%),radial-gradient(circle_at_92%_70%,hsl(var(--success)/0.14),transparent_24%)]" />
       <div className="relative z-10 flex h-full gap-[28px]">
         <div className="min-w-0 flex-1">
           <Breadcrumb />
           <div className="mt-[25px] flex gap-[16px]">
-            <div className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-lg border border-primary/35 bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.22),inset_0_0_18px_hsl(var(--primary)/0.10)]">
+            <div className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-lg border border-primary/40 bg-primary/12 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.28),inset_0_0_18px_hsl(var(--primary)/0.12)]">
               <FileText className="h-[28px] w-[28px]" />
             </div>
             <div className="min-w-0">
@@ -315,7 +315,7 @@ function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; tot
               </div>
               <p className="mt-[12px] text-[14px] leading-none text-muted-foreground">Tipo: {row.categoria}</p>
               <p className="mt-[8px] text-[14px] leading-none text-muted-foreground">Origem: {row.origem ?? "—"}</p>
-              <span className="mt-[13px] inline-flex items-center rounded-full border border-primary/35 bg-primary/10 px-[15px] py-[6px] text-[12px] font-bold text-primary shadow-[0_0_14px_hsl(var(--primary)/0.18)]">
+              <span className="mt-[13px] inline-flex items-center rounded-full border border-primary/45 bg-primary/12 px-[15px] py-[6px] text-[12px] font-bold text-primary shadow-[0_0_14px_hsl(var(--primary)/0.18)]">
                 Prioridade: Normal
               </span>
             </div>
@@ -325,7 +325,7 @@ function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; tot
         <div className="mt-[46px] h-[118px] w-[540px] shrink-0 rounded-lg border border-border/35 bg-background/12 px-[28px] py-[22px] shadow-[inset_0_0_28px_hsl(var(--primary)/0.05)]">
           <div className="grid h-full grid-cols-3 gap-[28px]">
             <HeroMeta label="Status" icon={CheckCircle2}>
-              <Badge variant="outline" className={cn("mt-[7px] h-[30px] rounded-full px-[14px] text-[11px] font-black", statusBadgeClass(row.status))}>
+              <Badge variant="outline" className="mt-[7px] h-[30px] rounded-full border-success/35 bg-success/18 px-[14px] text-[11px] font-black text-success shadow-[0_0_12px_hsl(var(--success)/0.35)]">
                 {statusLabel(row.status)}
                 <span className="ml-2 h-2 w-2 rounded-full bg-success shadow-[0_0_8px_hsl(var(--success))]" />
               </Badge>
@@ -369,7 +369,7 @@ function HeroMeta({ label, icon: Icon, children }: { label: string; icon: typeof
 
 function TotalProcessCard({ row, totalLabel, taxaSucesso }: { row: Row; totalLabel: string; taxaSucesso: number }) {
   return (
-    <div className="ml-auto grid h-full w-[374px] shrink-0 grid-cols-[1fr_118px] items-center rounded-lg border border-primary/35 bg-primary/10 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
+    <div className="ml-auto grid h-full w-[374px] shrink-0 grid-cols-[1fr_118px] items-center rounded-lg border border-primary/45 bg-primary/12 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
       <div>
         <p className="text-[12px] font-black uppercase leading-none text-primary">Tempo total do processo</p>
         <p className="mt-[16px] text-[48px] font-black leading-none tracking-normal text-foreground drop-shadow-[0_0_10px_hsl(var(--primary)/0.38)]">{totalLabel}</p>
@@ -392,7 +392,7 @@ function SlaRing({ value }: { value: number }) {
       <div className="absolute inset-0 rounded-full bg-success/10 blur-md" />
       <svg viewBox="0 0 100 100" className="relative h-full w-full -rotate-90">
         <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(var(--success) / 0.18)" strokeWidth="10" />
-        <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(var(--success))" strokeWidth="10" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - (clamped / 100) * circumference} style={{ filter: "drop-shadow(0 0 8px hsl(var(--success) / 0.9))" }} />
+        <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(var(--success))" strokeWidth="11" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - (clamped / 100) * circumference} style={{ filter: "drop-shadow(0 0 8px hsl(var(--success) / 0.9))" }} />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[18px] font-black tabular-nums">{clamped}%</span>
     </div>
