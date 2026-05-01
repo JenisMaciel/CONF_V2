@@ -499,6 +499,8 @@ function RowSplit({ label, current, total }: { label: string; current: number; t
     </div>
   );
 }
+
+function TimelineNode({
   icon, tone, title, date, description, done, labelTop, valueTop, pulsing, statusLabel: customStatus,
 }: {
   icon: React.ReactNode;
