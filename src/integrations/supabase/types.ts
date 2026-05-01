@@ -322,6 +322,7 @@ export type Database = {
           numero: string
           origem: string | null
           origem_outros: string | null
+          prioridade: number
           qtd_processo: number
           recebida_em: string | null
           recebido_por: string | null
@@ -347,6 +348,7 @@ export type Database = {
           numero: string
           origem?: string | null
           origem_outros?: string | null
+          prioridade?: number
           qtd_processo?: number
           recebida_em?: string | null
           recebido_por?: string | null
@@ -372,6 +374,7 @@ export type Database = {
           numero?: string
           origem?: string | null
           origem_outros?: string | null
+          prioridade?: number
           qtd_processo?: number
           recebida_em?: string | null
           recebido_por?: string | null
