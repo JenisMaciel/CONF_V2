@@ -405,25 +405,34 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           ];
 
           return (
-            <div className="flex items-start w-full pb-2">
+            <div className="flex items-start w-full pb-2 pt-8">
               {nodes.map((n, i) => (
                 <div key={i} className={cn("flex items-start", i < nodes.length - 1 ? "flex-1" : "")}>
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
                     <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64, marginLeft: -58, marginRight: -58 }}>
-                      <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
-                      <p className={cn("text-sm font-semibold tabular-nums",
-                        segments[i].color === "success" ? "text-success" : "text-primary"
-                      )}>
-                        {segments[i].value}
-                      </p>
-                      <div className={cn(
-                        "absolute left-0 right-0 h-0.5",
-                        segments[i].active
-                          ? segments[i].color === "success" ? "bg-success" : "bg-primary"
-                          : "bg-border",
-                        segments[i].pulsing && "animate-pulse"
-                      )} style={{ top: 32 }} />
+                      {/* Label acima da linha */}
+                      <div className="absolute left-0 right-0 -top-7 flex flex-col items-center">
+                        <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
+                        <p className={cn("text-sm font-semibold tabular-nums leading-tight",
+                          segments[i].color === "success" ? "text-success" : "text-primary"
+                        )}>
+                          {segments[i].value}
+                        </p>
+                      </div>
+                      {/* Linha neon centralizada nos círculos (h=64, centro=32) */}
+                      <div
+                        className={cn(
+                          "absolute left-0 right-0 h-[2px] rounded-full",
+                          segments[i].active
+                            ? segments[i].color === "success"
+                              ? "bg-success shadow-[0_0_8px_hsl(var(--success)),0_0_16px_hsl(var(--success)/0.6)]"
+                              : "bg-primary shadow-[0_0_8px_hsl(var(--primary)),0_0_16px_hsl(var(--primary)/0.6)]"
+                            : "bg-border",
+                          segments[i].pulsing && "animate-pulse"
+                        )}
+                        style={{ top: 31 }}
+                      />
                     </div>
                   )}
                 </div>
