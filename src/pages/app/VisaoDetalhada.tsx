@@ -400,16 +400,16 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 <div key={i} className="flex items-start flex-1 last:flex-none">
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center pt-2 min-w-0 px-2">
+                    <div className="flex-1 flex flex-col items-center min-w-0 px-2 relative" style={{ height: 64 }}>
                       <p className="text-xs text-muted-foreground">{segments[i].label}</p>
                       <p className={`text-sm font-semibold tabular-nums ${segments[i].color === "success" ? "text-success" : "text-primary"}`}>
                         {segments[i].value}
                       </p>
-                      <div className={`mt-2 h-0.5 w-full ${
+                      <div className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 ${
                         segments[i].active
                           ? segments[i].color === "success" ? "bg-success" : "bg-primary"
                           : "bg-border"
-                      } ${segments[i].pulsing ? "animate-pulse" : ""}`} />
+                      } ${segments[i].pulsing ? "animate-pulse" : ""}`} style={{ top: 32 }} />
                     </div>
                   )}
                 </div>
