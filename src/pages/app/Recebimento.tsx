@@ -132,6 +132,8 @@ export default function Recebimento() {
       setNovaLoading(false);
     }
   };
+
+  const load = async () => {
     const { data } = await supabase
       .from("remessas")
       .select("*")
