@@ -6,9 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Play, Loader2, ListOrdered } from "lucide-react";
+import { Play, Loader2, ListOrdered, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+async function excluirRemessaCascata(id: string) {
+  await supabase.from("conferencias").delete().eq("remessa_id", id);
+  await supabase.from("materiais_amostras").delete().eq("remessa_id", id);
+  await supabase.from("remessa_itens").delete().eq("remessa_id", id);
+  return supabase.from("remessas").delete().eq("id", id);
+}
 
 const detectarTurno = (d: Date) => {
   const h = d.getHours();
@@ -126,10 +133,22 @@ export default function Workflow() {
                   <TableCell className="text-right tabular-nums">{r.total_itens}</TableCell>
                   <TableCell><Badge variant="secondary">Aguardando</Badge></TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" onClick={() => iniciarConferencia(r.id)} disabled={iniciandoId === r.id}>
-                      {iniciandoId === r.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
-                      Iniciar Conferência
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" onClick={() => iniciarConferencia(r.id)} disabled={iniciandoId === r.id}>
+                        {iniciandoId === r.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
+                        Iniciar Conferência
+                      </Button>
+                      {isAdmin && (
+                        <Button size="sm" variant="ghost" title="Excluir remessa"
+                          onClick={async () => {
+                            if (!confirm(`Excluir remessa ${r.numero}? Essa ação não pode ser desfeita.`)) return;
+                            const { error } = await excluirRemessaCascata(r.id);
+                            if (error) toast.error(error.message); else toast.success("Remessa excluída");
+                          }}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

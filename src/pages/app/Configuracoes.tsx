@@ -30,7 +30,7 @@ export default function Configuracoes() {
   const [newEmail, setNewEmail] = useState("");
   const [newPass, setNewPass] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<"user" | "admin">("user");
+  const [newRole, setNewRole] = useState<"user" | "admin" | "master">("user");
   const [creating, setCreating] = useState(false);
 
   // Destinatários de e-mail
@@ -183,6 +183,7 @@ export default function Configuracoes() {
                     <SelectContent>
                       <SelectItem value="user">Usuário</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      {isMaster && <SelectItem value="master">Master</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
