@@ -258,7 +258,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground animate-fade-in">
-      <div className="h-screen min-h-[720px] max-h-[920px] p-[8px_10px_10px] grid grid-rows-[183px_214px_minmax(300px,1fr)_90px] gap-[10px]">
+      <div className="h-screen min-h-[720px] max-h-[920px] p-[8px_8px_10px] grid grid-rows-[183px_214px_minmax(300px,1fr)_90px] gap-[10px]">
         <HeroPanel row={row} totalLabel={totalLabel} taxaSucesso={taxaSucesso} copyNumero={copyNumero} />
 
         <TimelinePanel
@@ -416,17 +416,17 @@ function TimelinePanel({
         <h2 className="text-[15px] font-black leading-none">Linha do Tempo do Processo</h2>
       </div>
 
-      <div className="absolute left-[6.6%] right-[6.5%] top-[79px] h-[2px]">
+      <div className="absolute left-[8.8%] right-[8.5%] top-[79px] h-[2px]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--success)),hsl(var(--success)),hsl(var(--primary)),hsl(var(--success)))] shadow-[0_0_12px_hsl(var(--success)/0.65)]" />
-        <div className="absolute left-[24%] top-1/2 h-[5px] w-[9%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--success))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
-        <div className="absolute left-[68%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--primary))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
+        <div className="absolute left-[25.5%] top-1/2 h-[5px] w-[9%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--success))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
+        <div className="absolute left-[68.8%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--primary))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
       </div>
 
-      <TimelineDuration className="left-[29.2%] top-[47px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
-      <TimelineDuration className="left-[68.1%] top-[47px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
+      <TimelineDuration className="left-[30.7%] top-[47px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
+      <TimelineDuration className="left-[69.1%] top-[47px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
 
       <TimelineNode
-        className="left-[8.3%] top-[49px]"
+        className="left-[6.2%] top-[49px]"
         title="RECEBIMENTO"
         titleClass="text-success"
         icon={<Archive className="h-[25px] w-[25px]" />}
@@ -448,7 +448,7 @@ function TimelinePanel({
         done={conferenciaIniciada}
       />
       <TimelineNode
-        className="right-[5.2%] top-[49px]"
+        className="right-[3.8%] top-[49px]"
         title="CONFERÊNCIA FINALIZADA"
         titleClass="text-success"
         icon={<CheckCircle2 className="h-[27px] w-[27px]" />}
@@ -487,7 +487,7 @@ function TimelineNode({
 }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className={cn("absolute z-20 flex w-[230px] flex-col items-center text-center", className)}>
+    <div className={cn("absolute z-20 flex w-[245px] flex-col items-center text-center", className)}>
       <div className="relative mb-[14px] flex h-[62px] w-[62px] items-center justify-center rounded-full border-[3px]" style={{ color: `hsl(var(${toneVar}))`, borderColor: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.12)`, boxShadow: `0 0 23px hsl(var(${toneVar}) / 0.72), inset 0 0 20px hsl(var(${toneVar}) / 0.17)` }}>
         <div className="absolute inset-[-10px] rounded-full border" style={{ borderColor: `hsl(var(${toneVar}) / 0.18)`, boxShadow: `0 0 18px hsl(var(${toneVar}) / 0.25)` }} />
         {icon}
