@@ -68,12 +68,17 @@ export default function VisaoDetalhada() {
       .select("id, numero, categoria, status, origem, total_itens, total_qtd_esperada, created_at, recebida_em, conferencia_inicio, finalizada_em, criado_por, recebido_por, conferencia_divergencia_comentario")
       .order("created_at", { ascending: false });
 
-    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade, user_id");
+    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade, user_id, codigo");
     const conferidoMap = new Map<string, number>();
     const userMap = new Map<string, string>();
+    const skuSetMap = new Map<string, Set<string>>();
     (confs ?? []).forEach((c: any) => {
       conferidoMap.set(c.remessa_id, (conferidoMap.get(c.remessa_id) ?? 0) + Number(c.quantidade || 0));
       if (c.user_id) userMap.set(c.remessa_id, c.user_id);
+      if (c.codigo) {
+        if (!skuSetMap.has(c.remessa_id)) skuSetMap.set(c.remessa_id, new Set());
+        skuSetMap.get(c.remessa_id)!.add(String(c.codigo));
+      }
     });
 
     const { data: divs } = await supabase.from("divergencias").select("remessa_id");
