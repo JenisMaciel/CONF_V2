@@ -410,7 +410,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 <div key={i} className={cn("flex items-start", i < nodes.length - 1 ? "flex-1" : "")}>
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64 }}>
+                    <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64, marginLeft: -58, marginRight: -58 }}>
                       <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
                       <p className={cn("text-sm font-semibold tabular-nums",
                         segments[i].color === "success" ? "text-success" : "text-primary"
