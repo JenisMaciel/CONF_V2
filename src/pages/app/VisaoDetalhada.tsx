@@ -445,9 +445,18 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           <Card className="p-6 border-border/50 shadow-card">
             <h3 className="font-semibold mb-4">Resumo do Processo</h3>
             <div className="space-y-3 text-sm">
-              <Row2 label="Itens conferidos:" value={String(row.conferido)} />
-              <Row2 label="Itens conferidos com sucesso:" value={String(Math.max(0, row.conferido - row.divergencias))} highlight="success" />
-              <Row2 label="Itens com divergência:" value={String(row.divergencias)} highlight={row.divergencias > 0 ? "destructive" : undefined} />
+              <RowSplit
+                label="SKUs conferidos:"
+                current={row.skus_conferidos}
+                total={row.total_itens}
+              />
+              <RowSplit
+                label="Quantidade conferida:"
+                current={row.conferido}
+                total={row.total_qtd_esperada}
+              />
+              <Row2 label="Itens conferidos com sucesso:" value={fmtNum(Math.max(0, row.conferido - row.divergencias))} highlight="success" />
+              <Row2 label="Itens com divergência:" value={fmtNum(row.divergencias)} highlight={row.divergencias > 0 ? "destructive" : undefined} />
               <Row2 label="Taxa de sucesso:" value={`${taxaSucesso.toFixed(0)}%`} highlight="success" />
             </div>
           </Card>
