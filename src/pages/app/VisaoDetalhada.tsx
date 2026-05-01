@@ -787,15 +787,21 @@ function TimelineNode({
   done: boolean;
   pulsing?: boolean;
 }) {
-  const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
+  const ring = tone === "success"
+    ? "bg-success/15 text-success border-success"
+    : "bg-primary/15 text-primary border-primary";
+  const glow = tone === "success"
+    ? "shadow-[0_0_12px_hsl(var(--success)/0.9),0_0_28px_hsl(var(--success)/0.5),inset_0_0_10px_hsl(var(--success)/0.25)]"
+    : "shadow-[0_0_12px_hsl(var(--primary)/0.9),0_0_28px_hsl(var(--primary)/0.5),inset_0_0_10px_hsl(var(--primary)/0.25)]";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
     <div className="flex flex-col items-center text-center w-[180px] shrink-0">
       <div className={cn(
-        "h-16 w-16 rounded-full border-2 flex items-center justify-center",
+        "h-16 w-16 rounded-full border-2 flex items-center justify-center bg-background",
         ring,
+        done && glow,
         !done && "opacity-50",
-        pulsing && "animate-pulse shadow-glow"
+        pulsing && "animate-pulse"
       )}>
         {icon}
       </div>
