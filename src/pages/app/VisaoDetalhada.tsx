@@ -410,7 +410,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 <div key={i} className={cn("flex items-start", i < nodes.length - 1 ? "flex-1" : "")}>
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64 }}>
+                    <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64, marginLeft: -58, marginRight: -58 }}>
                       <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
                       <p className={cn("text-sm font-semibold tabular-nums",
                         segments[i].color === "success" ? "text-success" : "text-primary"
@@ -781,7 +781,7 @@ function TimelineNode({
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
-    <div className="flex flex-col items-center text-center w-16 shrink-0 relative">
+    <div className="flex flex-col items-center text-center w-[180px] shrink-0">
       <div className={cn(
         "h-16 w-16 rounded-full border-2 flex items-center justify-center",
         ring,
@@ -790,10 +790,10 @@ function TimelineNode({
       )}>
         {icon}
       </div>
-      <div className="absolute top-[68px] left-1/2 -translate-x-1/2 w-[200px] flex flex-col items-center">
-        <p className={cn("text-xs font-bold tracking-wide", done ? valueColor : "text-muted-foreground")}>{title}</p>
-        <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{date}</p>
-        <p className="text-[11px] text-muted-foreground/80 mt-0.5">{description}</p>
+      <div className="mt-3 flex flex-col items-center w-full px-1 min-w-0">
+        <p className={cn("text-xs font-bold tracking-wide truncate max-w-full", done ? valueColor : "text-muted-foreground")}>{title}</p>
+        <p className="text-[11px] text-muted-foreground mt-1 tabular-nums truncate max-w-full">{date}</p>
+        <p className="text-[11px] text-muted-foreground/80 mt-0.5 truncate max-w-full">{description}</p>
         <Badge variant="outline" className={cn("mt-2 text-[10px]",
           pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse"
           : done ? "bg-success/15 text-success border-success/30"
