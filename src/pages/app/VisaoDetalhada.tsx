@@ -2,12 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart3, Clock, Search, TrendingUp } from "lucide-react";
+import {
+  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft,
+} from "lucide-react";
 
-const fmtDateTime = (s?: string | null) => (s ? new Date(s).toLocaleString("pt-BR") : "—");
+const fmtDateTime = (s?: string | null) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return `${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+};
 
 const fmtDuration = (ms: number) => {
   if (!Number.isFinite(ms) || ms <= 0) return "—";
@@ -27,39 +33,89 @@ type Row = {
   total_itens: number;
   total_qtd_esperada: number;
   conferido: number;
+  divergencias: number;
   created_at: string;
+  recebida_em: string | null;
   conferencia_inicio: string | null;
   finalizada_em: string | null;
-  duracaoMs: number | null;
-  progresso: number;
+  responsavel: string | null;
+  observacao: string | null;
+  duracaoTotalMs: number | null;
+  duracaoAteInicioMs: number | null;
+  duracaoConferenciaMs: number | null;
 };
+
+const statusLabel = (s: string) =>
+  s === "finalizada" ? "CONCLUÍDO" : s === "em_conferencia" ? "EM CONFERÊNCIA" : s === "recebida" ? "RECEBIDO" : s.toUpperCase();
+
+const statusBadgeClass = (s: string) =>
+  s === "finalizada"
+    ? "bg-success/15 text-success border-success/30"
+    : s === "em_conferencia"
+    ? "bg-primary/15 text-primary border-primary/30"
+    : "bg-warning/15 text-warning border-warning/30";
 
 export default function VisaoDetalhada() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
+  const [selected, setSelected] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
     const { data: rem } = await supabase
       .from("remessas")
-      .select("id, numero, categoria, status, origem, total_itens, total_qtd_esperada, created_at, conferencia_inicio, finalizada_em")
+      .select("id, numero, categoria, status, origem, total_itens, total_qtd_esperada, created_at, recebida_em, conferencia_inicio, finalizada_em, criado_por, recebido_por, conferencia_divergencia_comentario")
       .order("created_at", { ascending: false });
 
-    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade");
+    const { data: confs } = await supabase.from("conferencias").select("remessa_id, quantidade, user_id");
     const conferidoMap = new Map<string, number>();
+    const userMap = new Map<string, string>();
     (confs ?? []).forEach((c: any) => {
       conferidoMap.set(c.remessa_id, (conferidoMap.get(c.remessa_id) ?? 0) + Number(c.quantidade || 0));
+      if (c.user_id) userMap.set(c.remessa_id, c.user_id);
     });
 
+    const { data: divs } = await supabase.from("divergencias").select("remessa_id");
+    const divMap = new Map<string, number>();
+    (divs ?? []).forEach((d: any) => divMap.set(d.remessa_id, (divMap.get(d.remessa_id) ?? 0) + 1));
+
+    const userIds = Array.from(new Set([
+      ...(rem ?? []).map((r: any) => r.recebido_por).filter(Boolean),
+      ...Array.from(userMap.values()),
+    ]));
+    let profileMap = new Map<string, string>();
+    if (userIds.length) {
+      const { data: profs } = await supabase.from("profiles").select("user_id, display_name, email").in("user_id", userIds);
+      (profs ?? []).forEach((p: any) => profileMap.set(p.user_id, p.display_name || p.email));
+    }
+
     const list: Row[] = (rem ?? []).map((r: any) => {
-      const conferido = conferidoMap.get(r.id) ?? 0;
-      const esperado = Number(r.total_qtd_esperada || 0);
-      const progresso = esperado > 0 ? Math.min(100, (conferido / esperado) * 100) : (r.status === "finalizada" ? 100 : 0);
+      const recebido = r.recebida_em ?? r.created_at;
       const ini = r.conferencia_inicio ? new Date(r.conferencia_inicio).getTime() : null;
       const fim = r.finalizada_em ? new Date(r.finalizada_em).getTime() : null;
-      const duracaoMs = ini && fim ? fim - ini : null;
-      return { ...r, conferido, progresso, duracaoMs };
+      const recMs = recebido ? new Date(recebido).getTime() : null;
+      const responsavelId = userMap.get(r.id) ?? r.recebido_por ?? r.criado_por;
+      return {
+        id: r.id,
+        numero: r.numero,
+        categoria: r.categoria,
+        status: r.status,
+        origem: r.origem,
+        total_itens: r.total_itens,
+        total_qtd_esperada: r.total_qtd_esperada,
+        conferido: conferidoMap.get(r.id) ?? 0,
+        divergencias: divMap.get(r.id) ?? 0,
+        created_at: r.created_at,
+        recebida_em: recebido,
+        conferencia_inicio: r.conferencia_inicio,
+        finalizada_em: r.finalizada_em,
+        responsavel: responsavelId ? profileMap.get(responsavelId) ?? null : null,
+        observacao: r.conferencia_divergencia_comentario,
+        duracaoTotalMs: recMs && fim ? fim - recMs : null,
+        duracaoAteInicioMs: recMs && ini ? ini - recMs : null,
+        duracaoConferenciaMs: ini && fim ? fim - ini : null,
+      };
     });
 
     setRows(list);
@@ -72,6 +128,7 @@ export default function VisaoDetalhada() {
       .channel(`vd_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "remessas" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "conferencias" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "divergencias" }, load)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -86,13 +143,15 @@ export default function VisaoDetalhada() {
     );
   }, [rows, busca]);
 
-  const finalizadas = rows.filter((r) => r.duracaoMs && r.duracaoMs > 0);
-  const tempoMedioGeralMs = finalizadas.length
-    ? finalizadas.reduce((s, r) => s + (r.duracaoMs ?? 0), 0) / finalizadas.length
-    : 0;
+  const current = selected ? rows.find((r) => r.id === selected) ?? null : null;
 
+  if (current) return <DetalheProcesso row={current} onBack={() => setSelected(null)} />;
+
+  const finalizadas = rows.filter((r) => r.duracaoConferenciaMs && r.duracaoConferenciaMs > 0);
+  const tempoMedioGeralMs = finalizadas.length
+    ? finalizadas.reduce((s, r) => s + (r.duracaoConferenciaMs ?? 0), 0) / finalizadas.length
+    : 0;
   const emAndamento = rows.filter((r) => r.status === "em_conferencia").length;
-  const totalFinalizadas = finalizadas.length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -105,10 +164,10 @@ export default function VisaoDetalhada() {
         <Card className="p-5 border-border/50 shadow-card">
           <div className="flex items-center gap-2 text-muted-foreground text-xs"><Clock className="h-4 w-4" /> TEMPO MÉDIO DE CONFERÊNCIA</div>
           <p className="text-3xl font-bold mt-2 tabular-nums">{fmtDuration(tempoMedioGeralMs)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Baseado em {totalFinalizadas} processo(s) finalizado(s)</p>
+          <p className="text-xs text-muted-foreground mt-1">Baseado em {finalizadas.length} processo(s) finalizado(s)</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs"><TrendingUp className="h-4 w-4" /> EM ANDAMENTO</div>
+          <div className="flex items-center gap-2 text-muted-foreground text-xs"><PlayCircle className="h-4 w-4" /> EM ANDAMENTO</div>
           <p className="text-3xl font-bold mt-2 tabular-nums">{emAndamento}</p>
         </Card>
         <Card className="p-5 border-border/50 shadow-card">
@@ -123,60 +182,245 @@ export default function VisaoDetalhada() {
       </div>
 
       <Card className="p-0 overflow-hidden border-border/50 shadow-card">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Processo</TableHead>
-                <TableHead>Número</TableHead>
-                <TableHead>Origem</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Recebido em</TableHead>
-                <TableHead>Início conf.</TableHead>
-                <TableHead>Término conf.</TableHead>
-                <TableHead className="min-w-[260px]">Progresso</TableHead>
-                <TableHead className="text-right">Tempo</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Processo</TableHead>
+              <TableHead>Número</TableHead>
+              <TableHead>Origem</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Recebido em</TableHead>
+              <TableHead className="text-right">Tempo total</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Carregando…</TableCell></TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">Nenhum processo encontrado</TableCell></TableRow>
+            ) : filtered.map((r) => (
+              <TableRow key={r.id} className="cursor-pointer" onClick={() => setSelected(r.id)}>
+                <TableCell className="font-medium">{r.categoria}</TableCell>
+                <TableCell className="font-mono text-xs">{r.numero}</TableCell>
+                <TableCell className="text-xs">{r.origem ?? "—"}</TableCell>
+                <TableCell><Badge variant="outline" className={statusBadgeClass(r.status)}>{statusLabel(r.status)}</Badge></TableCell>
+                <TableCell className="text-xs">{fmtDateTime(r.recebida_em)}</TableCell>
+                <TableCell className="text-right tabular-nums text-xs font-semibold">{fmtDuration(r.duracaoTotalMs ?? 0)}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(r.id); }}>Ver detalhes</Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Carregando…</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-10">Nenhum processo encontrado</TableCell></TableRow>
-              ) : filtered.map((r) => {
-                const statusColor =
-                  r.status === "finalizada" ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
-                  : r.status === "em_conferencia" ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30"
-                  : "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30";
-                return (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.categoria}</TableCell>
-                    <TableCell className="font-mono text-xs">{r.numero}</TableCell>
-                    <TableCell className="text-xs">{r.origem ?? "—"}</TableCell>
-                    <TableCell><Badge variant="outline" className={statusColor}>{r.status}</Badge></TableCell>
-                    <TableCell className="text-xs">{fmtDateTime(r.created_at)}</TableCell>
-                    <TableCell className="text-xs">{fmtDateTime(r.conferencia_inicio)}</TableCell>
-                    <TableCell className="text-xs">{fmtDateTime(r.finalizada_em)}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1.5">
-                        <Progress value={r.progresso} className="h-2.5" />
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                          <span>{r.conferido}/{r.total_qtd_esperada} ({r.progresso.toFixed(0)}%)</span>
-                          <span className="font-semibold text-foreground/80 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {r.duracaoMs ? fmtDuration(r.duracaoMs) : (r.status === "em_conferencia" && r.conferencia_inicio ? fmtDuration(Date.now() - new Date(r.conferencia_inicio).getTime()) + " (em curso)" : "—")}
-                          </span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums text-xs font-semibold">{fmtDuration(r.duracaoMs ?? 0)}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
+  );
+}
+
+function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
+  const concluido = row.status === "finalizada";
+  const conferenciaIniciada = !!row.conferencia_inicio;
+  const taxaSucesso = row.total_qtd_esperada > 0
+    ? Math.max(0, Math.min(100, ((row.conferido - row.divergencias) / row.total_qtd_esperada) * 100))
+    : 0;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Detalhes do Processo</h1>
+          <nav className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+            <button onClick={onBack} className="hover:text-foreground">Processos</button>
+            <span>›</span>
+            <span>Processo #{row.numero}</span>
+          </nav>
+        </div>
+        <Button variant="outline" onClick={onBack} className="gap-2"><ArrowLeft className="h-4 w-4" /> Voltar para lista</Button>
+      </div>
+
+      {/* Cabeçalho */}
+      <Card className="p-6 border-border/50 shadow-card">
+        <div className="grid lg:grid-cols-[1fr_auto] gap-6">
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div className="flex gap-4">
+              <div className="h-12 w-12 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <FileText className="h-6 w-6" />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xl font-bold">Processo #{row.numero}</p>
+                <p className="text-sm text-muted-foreground">Tipo: {row.categoria}</p>
+                <p className="text-sm text-muted-foreground">Origem: {row.origem ?? "—"}</p>
+                <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30">Prioridade: Normal</Badge>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant="outline" className={statusBadgeClass(row.status)}>{statusLabel(row.status)}</Badge>
+              </div>
+              <div className="flex items-start gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Recebido em:</p>
+                  <p>{fmtDateTime(row.recebida_em)}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Responsável:</p>
+                  <p>{row.responsavel ?? "—"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Card className="bg-primary/10 border-primary/20 p-5 min-w-[260px]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold tracking-wide text-primary">TEMPO TOTAL DO PROCESSO</p>
+                <p className="text-4xl font-bold tabular-nums mt-2">
+                  {row.duracaoTotalMs ? fmtDuration(row.duracaoTotalMs) : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">De {fmtDateTime(row.recebida_em)}</p>
+                <p className="text-xs text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
+              </div>
+              <Clock className="h-10 w-10 text-primary/40" />
+            </div>
+          </Card>
         </div>
       </Card>
+
+      {/* Linha do tempo */}
+      <Card className="p-6 border-border/50 shadow-card">
+        <h2 className="font-semibold mb-8">Linha do Tempo do Processo</h2>
+        <div className="relative">
+          <div className="grid grid-cols-3 gap-4 relative">
+            {/* Conectores */}
+            <div className="absolute top-8 left-[16.66%] right-[16.66%] h-0.5 flex">
+              <div className={`flex-1 ${conferenciaIniciada ? "bg-success" : "bg-border"}`} />
+              <div className={`flex-1 ${concluido ? "bg-primary" : "bg-border"}`} />
+            </div>
+
+            <TimelineNode
+              icon={<Inbox className="h-7 w-7" />}
+              tone="success"
+              title="RECEBIMENTO"
+              date={fmtDateTime(row.recebida_em)}
+              description="Processo recebido no sistema"
+              done={!!row.recebida_em}
+              labelTop="Tempo até início"
+              valueTop={row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—"}
+              labelTopAlign="right"
+            />
+            <TimelineNode
+              icon={<PlayCircle className="h-7 w-7" />}
+              tone="primary"
+              title="INÍCIO DA CONFERÊNCIA"
+              date={fmtDateTime(row.conferencia_inicio)}
+              description="Conferência iniciada"
+              done={conferenciaIniciada}
+              labelTop="Tempo de conferência"
+              valueTop={row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"}
+              labelTopAlign="right"
+            />
+            <TimelineNode
+              icon={<CheckCircle2 className="h-7 w-7" />}
+              tone="success"
+              title="CONFERÊNCIA FINALIZADA"
+              date={fmtDateTime(row.finalizada_em)}
+              description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"}
+              done={concluido}
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Cards inferiores */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card className="p-6 border-border/50 shadow-card">
+          <h3 className="font-semibold mb-4">Detalhes do Tempo</h3>
+          <div className="space-y-3 text-sm">
+            <Row2 label="Recebido em:" value={fmtDateTime(row.recebida_em)} />
+            <Row2 label="Início da conferência:" value={fmtDateTime(row.conferencia_inicio)} />
+            <Row2 label="Finalização da conferência:" value={fmtDateTime(row.finalizada_em)} />
+            <div className="border-t border-border/60 my-3" />
+            <Row2 label="Tempo total do processo:" value={fmtDuration(row.duracaoTotalMs ?? 0)} highlight="primary" />
+            <Row2 label="Tempo até início:" value={fmtDuration(row.duracaoAteInicioMs ?? 0)} highlight="success" />
+            <Row2 label="Tempo de conferência:" value={fmtDuration(row.duracaoConferenciaMs ?? 0)} highlight="primary" />
+          </div>
+        </Card>
+
+        <div className="space-y-6">
+          <Card className="p-6 border-border/50 shadow-card">
+            <h3 className="font-semibold mb-4">Resumo do Processo</h3>
+            <div className="space-y-3 text-sm">
+              <Row2 label="Itens conferidos:" value={String(row.conferido)} />
+              <Row2 label="Itens conferidos com sucesso:" value={String(Math.max(0, row.conferido - row.divergencias))} highlight="success" />
+              <Row2 label="Itens com divergência:" value={String(row.divergencias)} highlight={row.divergencias > 0 ? "destructive" : undefined} />
+              <Row2 label="Taxa de sucesso:" value={`${taxaSucesso.toFixed(0)}%`} highlight="success" />
+            </div>
+          </Card>
+
+          <Card className="p-6 border-border/50 shadow-card">
+            <h3 className="font-semibold mb-3">Observações</h3>
+            <p className="text-sm text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Row2({ label, value, highlight }: { label: string; value: string; highlight?: "success" | "primary" | "destructive" }) {
+  const cls =
+    highlight === "success" ? "text-success font-semibold"
+    : highlight === "primary" ? "text-primary font-semibold"
+    : highlight === "destructive" ? "text-destructive font-semibold"
+    : "font-medium";
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`tabular-nums ${cls}`}>{value}</span>
+    </div>
+  );
+}
+
+function TimelineNode({
+  icon, tone, title, date, description, done, labelTop, valueTop,
+}: {
+  icon: React.ReactNode;
+  tone: "success" | "primary";
+  title: string;
+  date: string;
+  description: string;
+  done: boolean;
+  labelTop?: string;
+  valueTop?: string;
+  labelTopAlign?: "left" | "right";
+}) {
+  const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
+  const valueColor = tone === "success" ? "text-success" : "text-primary";
+  return (
+    <div className="flex flex-col items-center text-center relative pt-6">
+      {labelTop && (
+        <div className="absolute -top-2 left-1/2 translate-x-2 text-xs">
+          <p className="text-muted-foreground">{labelTop}</p>
+          <p className={`font-semibold ${valueColor}`}>{valueTop}</p>
+        </div>
+      )}
+      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"}`}>
+        {icon}
+      </div>
+      <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
+      <p className="text-xs text-muted-foreground mt-1">{date}</p>
+      <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
+      <Badge variant="outline" className={`mt-2 ${done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
+        {done ? "Concluído" : "Pendente"}
+      </Badge>
     </div>
   );
 }
