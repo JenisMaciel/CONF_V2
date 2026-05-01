@@ -310,64 +310,113 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
       {/* Linha do tempo */}
       <Card className="p-6 border-border/50 shadow-card">
-        <h2 className="font-semibold mb-8">Linha do Tempo do Processo</h2>
-        <div className="relative">
-          <div className={`grid gap-4 relative ${emConferencia ? "grid-cols-4" : "grid-cols-3"}`}>
-            {/* Conectores */}
-            <div className={`absolute top-8 h-0.5 flex ${emConferencia ? "left-[12.5%] right-[12.5%]" : "left-[16.66%] right-[16.66%]"}`}>
-              <div className={`flex-1 ${conferenciaIniciada ? "bg-success" : "bg-border"}`} />
-              {emConferencia && (
-                <div className="flex-1 bg-primary animate-pulse" />
-              )}
-              <div className={`flex-1 ${concluido ? "bg-primary" : "bg-border"}`} />
-            </div>
+        <h2 className="font-semibold mb-6">Linha do Tempo do Processo</h2>
+        {(() => {
+          const nodes: Array<{
+            icon: React.ReactNode;
+            tone: "success" | "primary";
+            title: string;
+            date: string;
+            description: string;
+            done: boolean;
+            pulsing?: boolean;
+            statusLabel?: string;
+          }> = [
+            {
+              icon: <Inbox className="h-7 w-7" />,
+              tone: "success",
+              title: "RECEBIMENTO",
+              date: fmtDateTime(row.recebida_em),
+              description: "Processo recebido no sistema",
+              done: !!row.recebida_em,
+            },
+            {
+              icon: <PlayCircle className="h-7 w-7" />,
+              tone: "primary",
+              title: "INÍCIO DA CONFERÊNCIA",
+              date: fmtDateTime(row.conferencia_inicio),
+              description: "Conferência iniciada",
+              done: conferenciaIniciada,
+            },
+          ];
+          if (emConferencia) {
+            nodes.push({
+              icon: <Loader2 className="h-7 w-7 animate-spin" />,
+              tone: "primary",
+              title: "CONFERÊNCIA EM ANDAMENTO",
+              date: `Decorrido: ${fmtDuration(tempoAndamentoMs)}`,
+              description: `${row.conferido}/${row.total_qtd_esperada} itens conferidos`,
+              done: true,
+              pulsing: true,
+              statusLabel: "Em andamento",
+            });
+          }
+          nodes.push({
+            icon: <CheckCircle2 className="h-7 w-7" />,
+            tone: "success",
+            title: "CONFERÊNCIA FINALIZADA",
+            date: fmtDateTime(row.finalizada_em),
+            description: concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização",
+            done: concluido,
+          });
 
-            <TimelineNode
-              icon={<Inbox className="h-7 w-7" />}
-              tone="success"
-              title="RECEBIMENTO"
-              date={fmtDateTime(row.recebida_em)}
-              description="Processo recebido no sistema"
-              done={!!row.recebida_em}
-              labelTop="Tempo até início"
-              valueTop={row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—"}
-            />
-            <TimelineNode
-              icon={<PlayCircle className="h-7 w-7" />}
-              tone="primary"
-              title="INÍCIO DA CONFERÊNCIA"
-              date={fmtDateTime(row.conferencia_inicio)}
-              description="Conferência iniciada"
-              done={conferenciaIniciada}
-              labelTop={emConferencia ? "Tempo decorrido" : "Tempo de conferência"}
-              valueTop={
-                emConferencia
-                  ? fmtDuration(tempoAndamentoMs)
-                  : row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"
-              }
-            />
-            {emConferencia && (
-              <TimelineNode
-                icon={<Loader2 className="h-7 w-7 animate-spin" />}
-                tone="primary"
-                title="CONFERÊNCIA EM ANDAMENTO"
-                date={`Decorrido: ${fmtDuration(tempoAndamentoMs)}`}
-                description={`${row.conferido}/${row.total_qtd_esperada} itens conferidos`}
-                done
-                pulsing
-                statusLabel="Em andamento"
-              />
-            )}
-            <TimelineNode
-              icon={<CheckCircle2 className="h-7 w-7" />}
-              tone="success"
-              title="CONFERÊNCIA FINALIZADA"
-              date={fmtDateTime(row.finalizada_em)}
-              description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"}
-              done={concluido}
-            />
-          </div>
-        </div>
+          const segments: Array<{ label: string; value: string; color: "success" | "primary"; pulsing?: boolean; active: boolean }> = [];
+          // segment 0: Recebimento -> Início
+          segments.push({
+            label: "Tempo até início",
+            value: row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—",
+            color: "success",
+            active: conferenciaIniciada,
+          });
+          if (emConferencia) {
+            // Início -> Em andamento
+            segments.push({
+              label: "Tempo decorrido",
+              value: fmtDuration(tempoAndamentoMs),
+              color: "primary",
+              pulsing: true,
+              active: true,
+            });
+            // Em andamento -> Finalizada
+            segments.push({
+              label: "",
+              value: "",
+              color: "primary",
+              active: concluido,
+            });
+          } else {
+            // Início -> Finalizada
+            segments.push({
+              label: "Tempo de conferência",
+              value: row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—",
+              color: "primary",
+              active: concluido,
+            });
+          }
+
+          return (
+            <div className="flex items-start w-full">
+              {nodes.map((n, i) => (
+                <div key={i} className="flex items-start flex-1 last:flex-none">
+                  <TimelineNode {...n} />
+                  {i < nodes.length - 1 && (
+                    <div className="flex-1 flex flex-col items-center min-w-0 px-2 relative" style={{ height: 64 }}>
+                      <p className="text-xs text-muted-foreground">{segments[i].label}</p>
+                      <p className={`text-sm font-semibold tabular-nums ${segments[i].color === "success" ? "text-success" : "text-primary"}`}>
+                        {segments[i].value}
+                      </p>
+                      <div className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 ${
+                        segments[i].active
+                          ? segments[i].color === "success" ? "bg-success" : "bg-primary"
+                          : "bg-border"
+                      } ${segments[i].pulsing ? "animate-pulse" : ""}`} style={{ top: 32 }} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </Card>
 
       {/* Cards inferiores */}
@@ -438,14 +487,8 @@ function TimelineNode({
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
-    <div className="flex flex-col items-center text-center relative pt-6">
-      {labelTop && (
-        <div className="absolute -top-2 left-1/2 translate-x-2 text-xs">
-          <p className="text-muted-foreground">{labelTop}</p>
-          <p className={`font-semibold ${valueColor} tabular-nums`}>{valueTop}</p>
-        </div>
-      )}
-      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
+    <div className="flex flex-col items-center text-center w-[160px] shrink-0">
+      <div className={`h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
       <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
