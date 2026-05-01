@@ -111,6 +111,7 @@ export default function VisaoDetalhada() {
         total_itens: r.total_itens,
         total_qtd_esperada: r.total_qtd_esperada,
         conferido: conferidoMap.get(r.id) ?? 0,
+        skus_conferidos: skuSetMap.get(r.id)?.size ?? 0,
         divergencias: divMap.get(r.id) ?? 0,
         created_at: r.created_at,
         recebida_em: recebido,
