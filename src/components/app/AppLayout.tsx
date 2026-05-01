@@ -41,10 +41,10 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
+      {!isDetailedVision && (
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform",
-          isDetailedVision ? "w-12" : "w-64",
+          "fixed lg:static inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform w-64",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -91,13 +91,14 @@ export default function AppLayout() {
           </Button>
         </div>
       </aside>
+      )}
 
       {/* Mobile overlay */}
-      {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setOpen(false)} />}
+      {open && !isDetailedVision && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setOpen(false)} />}
 
       {/* Main */}
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-card">
+        <header className={cn("lg:hidden items-center justify-between p-4 border-b border-border bg-card", isDetailedVision ? "hidden" : "flex")}>
           <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
