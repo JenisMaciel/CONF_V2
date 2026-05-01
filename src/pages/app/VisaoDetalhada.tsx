@@ -482,7 +482,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 label="Taxa de sucesso"
                 value={`${taxaSucesso.toFixed(0)}%`}
                 icon={<Trophy className="h-4 w-4" />}
-                color="primary"
+                color="purple"
               />
             </div>
             {concluido && row.divergencias === 0 && (
