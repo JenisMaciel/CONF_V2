@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Activity, Archive, ArrowRight, BarChart3, Box, Calendar, Check, CheckCircle2, ChevronRight,
-  Clock, Copy, Download, FileText, PackageCheck, PlayCircle, PlusCircle, Printer, Search,
+  Clock, Copy, Download, FileText, PlayCircle, PlusCircle, Printer, Search,
   Trophy, User, Zap,
 } from "lucide-react";
 
