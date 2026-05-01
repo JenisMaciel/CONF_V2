@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft,
+  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft, Loader2,
 } from "lucide-react";
 
 const fmtDateTime = (s?: string | null) => {
@@ -222,6 +222,20 @@ export default function VisaoDetalhada() {
 function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
   const concluido = row.status === "finalizada";
   const conferenciaIniciada = !!row.conferencia_inicio;
+  const emConferencia = row.status === "em_conferencia" && conferenciaIniciada && !concluido;
+
+  // Ticker em tempo real: atualiza a cada 1s enquanto estiver em conferência
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!emConferencia) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [emConferencia]);
+
+  const tempoAndamentoMs = emConferencia && row.conferencia_inicio
+    ? now - new Date(row.conferencia_inicio).getTime()
+    : 0;
+
   const taxaSucesso = row.total_qtd_esperada > 0
     ? Math.max(0, Math.min(100, ((row.conferido - row.divergencias) / row.total_qtd_esperada) * 100))
     : 0;
@@ -298,10 +312,13 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
       <Card className="p-6 border-border/50 shadow-card">
         <h2 className="font-semibold mb-8">Linha do Tempo do Processo</h2>
         <div className="relative">
-          <div className="grid grid-cols-3 gap-4 relative">
+          <div className={`grid gap-4 relative ${emConferencia ? "grid-cols-4" : "grid-cols-3"}`}>
             {/* Conectores */}
-            <div className="absolute top-8 left-[16.66%] right-[16.66%] h-0.5 flex">
+            <div className={`absolute top-8 h-0.5 flex ${emConferencia ? "left-[12.5%] right-[12.5%]" : "left-[16.66%] right-[16.66%]"}`}>
               <div className={`flex-1 ${conferenciaIniciada ? "bg-success" : "bg-border"}`} />
+              {emConferencia && (
+                <div className="flex-1 bg-primary animate-pulse" />
+              )}
               <div className={`flex-1 ${concluido ? "bg-primary" : "bg-border"}`} />
             </div>
 
@@ -314,7 +331,6 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
               done={!!row.recebida_em}
               labelTop="Tempo até início"
               valueTop={row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—"}
-              labelTopAlign="right"
             />
             <TimelineNode
               icon={<PlayCircle className="h-7 w-7" />}
@@ -323,10 +339,25 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
               date={fmtDateTime(row.conferencia_inicio)}
               description="Conferência iniciada"
               done={conferenciaIniciada}
-              labelTop="Tempo de conferência"
-              valueTop={row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"}
-              labelTopAlign="right"
+              labelTop={emConferencia ? "Tempo decorrido" : "Tempo de conferência"}
+              valueTop={
+                emConferencia
+                  ? fmtDuration(tempoAndamentoMs)
+                  : row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"
+              }
             />
+            {emConferencia && (
+              <TimelineNode
+                icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                tone="primary"
+                title="CONFERÊNCIA EM ANDAMENTO"
+                date={`Decorrido: ${fmtDuration(tempoAndamentoMs)}`}
+                description={`${row.conferido}/${row.total_qtd_esperada} itens conferidos`}
+                done
+                pulsing
+                statusLabel="Em andamento"
+              />
+            )}
             <TimelineNode
               icon={<CheckCircle2 className="h-7 w-7" />}
               tone="success"
@@ -390,7 +421,7 @@ function Row2({ label, value, highlight }: { label: string; value: string; highl
 }
 
 function TimelineNode({
-  icon, tone, title, date, description, done, labelTop, valueTop,
+  icon, tone, title, date, description, done, labelTop, valueTop, pulsing, statusLabel: customStatus,
 }: {
   icon: React.ReactNode;
   tone: "success" | "primary";
@@ -401,6 +432,8 @@ function TimelineNode({
   labelTop?: string;
   valueTop?: string;
   labelTopAlign?: "left" | "right";
+  pulsing?: boolean;
+  statusLabel?: string;
 }) {
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
@@ -409,17 +442,17 @@ function TimelineNode({
       {labelTop && (
         <div className="absolute -top-2 left-1/2 translate-x-2 text-xs">
           <p className="text-muted-foreground">{labelTop}</p>
-          <p className={`font-semibold ${valueColor}`}>{valueTop}</p>
+          <p className={`font-semibold ${valueColor} tabular-nums`}>{valueTop}</p>
         </div>
       )}
-      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"}`}>
+      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
       <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
-      <p className="text-xs text-muted-foreground mt-1">{date}</p>
+      <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
       <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
-      <Badge variant="outline" className={`mt-2 ${done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
-        {done ? "Concluído" : "Pendente"}
+      <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
+        {customStatus ?? (done ? "Concluído" : "Pendente")}
       </Badge>
     </div>
   );
