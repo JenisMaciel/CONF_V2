@@ -18,8 +18,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/app", label: "Recebimento", icon: PackageOpen },
-  { to: "/app/conferencia", label: "Conferência", icon: ScanBarcode },
-  { to: "/app/dados", label: "Dados", icon: Database, adminOnly: true },
+  { to: "/app/conferencia", label: "Processo em Conferência", icon: ScanBarcode },
   { to: "/app/divergencias", label: "Gestão de Divergência", icon: AlertTriangle, adminOnly: true },
   { to: "/app/historico", label: "Histórico", icon: History, adminOnly: true },
   { to: "/app/processos-conferidos", label: "Processos Conferidos", icon: Archive, adminOnly: true },
