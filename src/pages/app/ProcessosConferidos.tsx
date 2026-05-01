@@ -74,7 +74,7 @@ export default function ProcessosConferidos() {
     const { data: rem } = await supabase
       .from("remessas")
       .select("*")
-      .eq("status", "recebida")
+      .in("status", ["recebida", "finalizada"])
       .order("recebida_em", { ascending: false });
     setRemessas(rem ?? []);
     const ids = (rem ?? []).map((r) => r.id);
