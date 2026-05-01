@@ -61,7 +61,77 @@ export default function Recebimento() {
   const selectedRef = useRef<string | null>(null);
   useEffect(() => { selectedRef.current = selectedRemessa; }, [selectedRemessa]);
 
-  const load = async () => {
+  // ---- Estado da NOVA REMESSA (importação) ----
+  const [novaProcesso, setNovaProcesso] = useState("");
+  const [novaNumero, setNovaNumero] = useState("");
+  const [novaQtdProcesso, setNovaQtdProcesso] = useState("");
+  const [novaOrigem, setNovaOrigem] = useState<string>("");
+  const [novaOrigemOutros, setNovaOrigemOutros] = useState("");
+  const [novaDivergencia, setNovaDivergencia] = useState<"sim" | "nao">("nao");
+  const [novaDivergenciaComentario, setNovaDivergenciaComentario] = useState("");
+  const [novaFile, setNovaFile] = useState<File | null>(null);
+  const [novaLoading, setNovaLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleCriarRemessa = async () => {
+    if (!novaProcesso.trim()) { toast.error("Informe o processo"); return; }
+    if (!novaNumero.trim()) { toast.error("Informe o número da remessa"); return; }
+    if (!novaOrigem) { toast.error("Selecione a origem"); return; }
+    if (novaOrigem === "OUTROS" && !novaOrigemOutros.trim()) { toast.error("Informe a origem (Outros)"); return; }
+    if (!novaFile) { toast.error("Selecione um arquivo XLSX"); return; }
+    if (novaDivergencia === "sim" && !novaDivergenciaComentario.trim()) {
+      toast.error("Informe o comentário da divergência"); return;
+    }
+
+    setNovaLoading(true);
+    try {
+      const buf = await novaFile.arrayBuffer();
+      const wb = XLSX.read(buf);
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
+      const itensImp = rows.map((r) => {
+        const codigo = String(r["CÓDIGO"] ?? r["CODIGO"] ?? r["Código"] ?? r["codigo"] ?? "").trim();
+        const descricao = String(r["DESCRIÇÃO"] ?? r["DESCRICAO"] ?? r["Descrição"] ?? r["descricao"] ?? "").trim();
+        const qtd = Number(r["QTDE"] ?? r["QTD"] ?? r["Qtde"] ?? r["qtd"] ?? 0);
+        return { codigo, descricao, qtd };
+      }).filter((i) => i.codigo);
+
+      if (!itensImp.length) { toast.error("Planilha sem itens (cabeçalho: CÓDIGO, DESCRIÇÃO, QTDE)"); setNovaLoading(false); return; }
+
+      const totalQtd = itensImp.reduce((s, i) => s + Number(i.qtd), 0);
+      const { data: remessa, error } = await supabase.from("remessas").insert({
+        numero: novaNumero.trim(),
+        categoria: novaProcesso.trim().toUpperCase() as any,
+        status: "aberta",
+        total_itens: itensImp.length,
+        total_qtd_esperada: totalQtd,
+        criado_por: user?.id,
+        qtd_processo: Number(novaQtdProcesso) || 0,
+        origem: novaOrigem,
+        origem_outros: novaOrigem === "OUTROS" ? novaOrigemOutros.trim() : null,
+        divergencia_recebimento: novaDivergencia === "sim",
+        divergencia_recebimento_comentario: novaDivergencia === "sim" ? novaDivergenciaComentario.trim() : null,
+      } as any).select().single();
+      if (error) throw error;
+
+      const { error: e2 } = await supabase.from("remessa_itens").insert(
+        itensImp.map((i) => ({ remessa_id: remessa.id, codigo: i.codigo, descricao: i.descricao, qtd_esperada: i.qtd }))
+      );
+      if (e2) throw e2;
+
+      toast.success(`Remessa criada com ${itensImp.length} itens`);
+      setNovaProcesso(""); setNovaNumero(""); setNovaQtdProcesso(""); setNovaOrigem("");
+      setNovaOrigemOutros(""); setNovaDivergencia("nao"); setNovaDivergenciaComentario("");
+      setNovaFile(null);
+      if (fileRef.current) fileRef.current.value = "";
+      await load();
+      setSelectedRemessa(remessa.id);
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao criar remessa");
+    } finally {
+      setNovaLoading(false);
+    }
+  };
     const { data } = await supabase
       .from("remessas")
       .select("*")
