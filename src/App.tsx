@@ -12,7 +12,6 @@ import Recebimento from "./pages/app/Recebimento";
 import Workflow from "./pages/app/Workflow";
 import Conferencia from "./pages/app/Conferencia";
 import Divergencias from "./pages/app/Divergencias";
-import Historico from "./pages/app/Historico";
 import ProcessosConferidos from "./pages/app/ProcessosConferidos";
 import VisaoDetalhada from "./pages/app/VisaoDetalhada";
 import Configuracoes from "./pages/app/Configuracoes";
@@ -35,7 +34,7 @@ const App = () => (
               <Route path="conferencia" element={<Conferencia />} />
               
               <Route path="divergencias" element={<Divergencias />} />
-              <Route path="historico" element={<Historico />} />
+              <Route path="historico" element={<ProcessosConferidos />} />
               <Route path="processos-conferidos" element={<ProcessosConferidos />} />
               <Route path="visao-detalhada" element={<VisaoDetalhada />} />
               <Route path="historico-devolucoes" element={<ProcessosConferidos />} />
