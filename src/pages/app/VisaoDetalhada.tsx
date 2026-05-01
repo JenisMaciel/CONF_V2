@@ -487,14 +487,8 @@ function TimelineNode({
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
-    <div className="flex flex-col items-center text-center relative pt-6">
-      {labelTop && (
-        <div className="absolute -top-2 left-1/2 translate-x-2 text-xs">
-          <p className="text-muted-foreground">{labelTop}</p>
-          <p className={`font-semibold ${valueColor} tabular-nums`}>{valueTop}</p>
-        </div>
-      )}
-      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
+    <div className="flex flex-col items-center text-center w-[160px] shrink-0">
+      <div className={`h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
       <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
