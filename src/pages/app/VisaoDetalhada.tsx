@@ -421,7 +421,7 @@ function Row2({ label, value, highlight }: { label: string; value: string; highl
 }
 
 function TimelineNode({
-  icon, tone, title, date, description, done, labelTop, valueTop,
+  icon, tone, title, date, description, done, labelTop, valueTop, pulsing, statusLabel: customStatus,
 }: {
   icon: React.ReactNode;
   tone: "success" | "primary";
@@ -432,6 +432,8 @@ function TimelineNode({
   labelTop?: string;
   valueTop?: string;
   labelTopAlign?: "left" | "right";
+  pulsing?: boolean;
+  statusLabel?: string;
 }) {
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
@@ -440,17 +442,17 @@ function TimelineNode({
       {labelTop && (
         <div className="absolute -top-2 left-1/2 translate-x-2 text-xs">
           <p className="text-muted-foreground">{labelTop}</p>
-          <p className={`font-semibold ${valueColor}`}>{valueTop}</p>
+          <p className={`font-semibold ${valueColor} tabular-nums`}>{valueTop}</p>
         </div>
       )}
-      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"}`}>
+      <div className={`relative z-10 h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
       <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
-      <p className="text-xs text-muted-foreground mt-1">{date}</p>
+      <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
       <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
-      <Badge variant="outline" className={`mt-2 ${done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
-        {done ? "Concluído" : "Pendente"}
+      <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
+        {customStatus ?? (done ? "Concluído" : "Pendente")}
       </Badge>
     </div>
   );
