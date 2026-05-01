@@ -393,20 +393,26 @@ function TimelinePanel({
   emConferencia: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden px-3 py-2">
-      <div className="absolute inset-0 opacity-35" style={{ background: "linear-gradient(180deg, hsl(var(--card) / 0.18), hsl(var(--background) / 0.22))" }} />
-      <div className="absolute inset-x-[25%] top-0 bottom-0 opacity-35" style={{ backgroundImage: "linear-gradient(hsl(var(--success)/0.14) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--success)/0.12) 1px, transparent 1px)", backgroundSize: "32px 32px", transform: "skewX(-20deg)" }} />
-      <h2 className="relative z-10 text-[13px] font-black leading-none mb-3">Linha do Tempo do Processo</h2>
-      <div className="absolute left-[35px] right-[34px] top-[75px] h-[2px] rounded-full bg-warning shadow-[0_0_9px_hsl(var(--warning)/0.78)]" />
-      <div className="relative z-10 grid grid-cols-[105px_178px_170px_185px_150px_220px_110px] items-start h-[160px]">
-        <TimelineStep icon="mail" title="RECEBIMENTO" date={fmtDateTime(row.recebida_em)} description="Ao recebido no sistema" status="Concluído" tone="warning" done={!!row.recebida_em} />
-        <TimelineAsset img={forkliftImg} alt="Empilhadeira" pillLabel="Tempo até início" pillValue={ateInicioLabel} info="Volume Total Recebido: 10 Pallets" size="forklift" />
-        <TimelineStep icon="play" title="INÍCIO DA CONFERÊNCIA" date={fmtDateTime(row.conferencia_inicio)} description="Conferência iniciada" status={conferenciaIniciada ? "Concluído" : "Pendente"} tone="primary" done={conferenciaIniciada} pulsing={emConferencia} />
-        <TimelineAsset img={scannerImg} alt="Scanner" info={`Volume Total Recebido: ${Math.max(row.skus_conferidos, 1)} Pallets`} size="scanner" />
-        <img src={gridBoxesImg} alt="Mapa de caixas" loading="lazy" className="mt-5 h-[103px] w-full object-contain drop-shadow-[0_0_16px_hsl(var(--success)/0.38)]" />
-        <TimelineAsset img={shelfImg} alt="Prateleira" pillLabel="Tempo de conferência" pillValue={conferenciaLabel} info="Volume Total Recebido: 12 Pallets" size="shelf" />
-        <TimelineStep icon="check" title="CONFERÊNCIA FINALIZADA" date={fmtDateTime(row.finalizada_em)} description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"} status={concluido ? "Concluído" : "Pendente"} tone="warning" done={concluido} />
-      </div>
+    <section className="relative h-full overflow-hidden px-3 py-2">
+      <div className="absolute inset-0 opacity-40" style={{ background: "linear-gradient(180deg, hsl(var(--background) / 0.08), hsl(var(--card) / 0.22))" }} />
+      <div className="absolute inset-x-[22%] -top-8 bottom-0 opacity-35" style={{ backgroundImage: "linear-gradient(hsl(var(--success)/0.13) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--success)/0.11) 1px, transparent 1px)", backgroundSize: "32px 32px", transform: "skewX(-24deg)" }} />
+      <h2 className="absolute left-[12px] top-[16px] z-20 text-[13px] font-black leading-none">Linha do Tempo do Processo</h2>
+      <div className="absolute left-[34px] right-[25px] top-[75px] z-10 h-[2px] rounded-full bg-warning shadow-[0_0_9px_hsl(var(--warning)/0.82)]" />
+
+      <TimelineStep className="absolute left-[1.6%] top-[55px] z-20 w-[80px]" icon="mail" title="RECEBIMENTO" date={fmtDateTime(row.recebida_em)} description="Ao recebido no sistema" status="Concluído" tone="warning" done={!!row.recebida_em} />
+      <img src={forkliftImg} alt="Empilhadeira" loading="lazy" width={768} height={768} className="absolute left-[7.6%] top-[57px] z-20 h-[90px] w-auto object-contain brightness-105 contrast-110 drop-shadow-[0_0_12px_hsl(var(--warning)/0.34)]" />
+      <TimePill className="left-[16.6%] top-[30px]" label="Tempo até início" value={ateInicioLabel} />
+      <TimelineInfo className="left-[16.2%] top-[101px]" value="Volume Total Recebida: 10 Pallets" />
+
+      <img src={scannerImg} alt="Scanner e caixas" loading="lazy" width={512} height={512} className="absolute left-[35.0%] top-[78px] z-20 h-[78px] w-auto object-contain mix-blend-screen brightness-110 contrast-110 drop-shadow-[0_0_12px_hsl(var(--primary)/0.32)]" />
+      <TimelineStep className="absolute left-[43.3%] top-[55px] z-20 w-[130px]" icon="play" title="INÍCIO DA CONFERÊNCIA" date={fmtDateTime(row.conferencia_inicio)} description="Conferência iniciada" status={conferenciaIniciada ? "Concluído" : "Pendente"} tone="primary" done={conferenciaIniciada} pulsing={emConferencia} />
+      <img src={gridBoxesImg} alt="Mapa de caixas" loading="lazy" width={512} height={512} className="absolute left-[52.8%] top-[68px] z-20 h-[88px] w-auto object-contain drop-shadow-[0_0_15px_hsl(var(--success)/0.36)]" />
+      <TimelineInfo className="left-[39.4%] top-[150px]" value={`Volume Total Recebido: ${Math.max(row.skus_conferidos, 1)} Pallets`} />
+
+      <TimePill className="left-[65.1%] top-[30px]" label="Tempo de conferência" value={conferenciaLabel} />
+      <TimelineInfo className="left-[64.7%] top-[101px]" value="Volume Total Recebido: 12 Pallets" />
+      <img src={shelfImg} alt="Prateleira finalizada" loading="lazy" width={512} height={512} className="absolute left-[78.3%] top-[8px] z-20 h-[155px] w-auto object-contain brightness-110 contrast-110 drop-shadow-[0_0_15px_hsl(var(--success)/0.42)]" />
+      <TimelineStep className="absolute right-[0.8%] top-[55px] z-20 w-[95px]" icon="check" title="CONFERÊNCIA FINALIZADA" date={fmtDateTime(row.finalizada_em)} description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"} status={concluido ? "Concluído" : "Pendente"} tone="warning" done={concluido} />
     </section>
   );
 }
