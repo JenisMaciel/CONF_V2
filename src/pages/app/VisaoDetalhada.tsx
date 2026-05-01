@@ -33,6 +33,7 @@ type Row = {
   total_itens: number;
   total_qtd_esperada: number;
   conferido: number;
+  skus_conferidos: number;
   divergencias: number;
   created_at: string;
   recebida_em: string | null;
