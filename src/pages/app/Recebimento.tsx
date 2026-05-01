@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +7,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2 } from "lucide-react";
+import { Package, ScanBarcode, AlertTriangle, CheckCircle2, ListChecks, AlertOctagon, CheckCheck, Loader2, Upload, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fmtNum } from "@/lib/utils";
 import { DiffBadge, CountCell } from "@/components/DiffBadge";
 import { toast } from "sonner";
+
+const ORIGENS = ["SUPER TERMINAIS", "EAD", "TORQUARTO", "TECA II", "CHIABTÃO", "OUTROS"] as const;
 
 interface Remessa {
   id: string;
