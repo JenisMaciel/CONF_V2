@@ -36,31 +36,33 @@ export default function AppLayout() {
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
   const items = NAV.filter((i) => !i.adminOnly || isAdmin);
+  const isDetailedVision = location.pathname === "/app/visao-detalhada";
 
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-40 w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform",
+          "fixed lg:static inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform",
+          isDetailedVision ? "w-12" : "w-64",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <div className="flex items-center gap-3 p-5 border-b border-sidebar-border">
+        <div className={cn("flex items-center border-b border-sidebar-border", isDetailedVision ? "justify-center p-2" : "gap-3 p-5")}>
           {settings.logo_url ? (
-            <img src={settings.logo_url} alt="Logo" className="h-10 w-10 rounded-lg object-contain bg-sidebar-accent" />
+            <img src={settings.logo_url} alt="Logo" className={cn("rounded-lg object-contain bg-sidebar-accent", isDetailedVision ? "h-8 w-8" : "h-10 w-10")} />
           ) : (
-            <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center">
-              <PackageCheck className="h-5 w-5 text-primary-foreground" />
+            <div className={cn("rounded-lg gradient-primary flex items-center justify-center", isDetailedVision ? "h-8 w-8" : "h-10 w-10")}>
+              <PackageCheck className={cn("text-primary-foreground", isDetailedVision ? "h-4 w-4" : "h-5 w-5")} />
             </div>
           )}
-          <div className="min-w-0">
+          <div className={cn("min-w-0", isDetailedVision && "hidden")}>
             <p className="font-bold truncate text-sidebar-foreground">{settings.app_name}</p>
             <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
           </div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className={cn("flex-1 overflow-y-auto", isDetailedVision ? "p-1.5 space-y-2" : "p-3 space-y-1")}>
           {items.map((item) => (
             <NavLink
               key={item.to}
@@ -69,22 +71,23 @@ export default function AppLayout() {
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center rounded-lg font-medium transition-colors",
+                  isDetailedVision ? "flex-col justify-center gap-1 px-1 py-2 text-[8px] leading-none" : "gap-3 px-3 py-2.5 text-sm",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                     : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                 )
               }
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <item.icon className={cn(isDetailedVision ? "h-4 w-4" : "h-4 w-4")} />
+              <span className={cn(isDetailedVision && "max-w-full truncate text-center")}>{isDetailedVision ? item.label.split(" ")[0] : item.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-sidebar-foreground/80 hover:text-sidebar-foreground" onClick={signOut}>
-            <LogOut className="h-4 w-4" /> Sair
+        <div className={cn("border-t border-sidebar-border", isDetailedVision ? "p-1.5" : "p-3")}>
+          <Button variant="ghost" size={isDetailedVision ? "icon" : "default"} className={cn("text-sidebar-foreground/80 hover:text-sidebar-foreground", !isDetailedVision && "w-full justify-start gap-3")} onClick={signOut}>
+            <LogOut className="h-4 w-4" /> {!isDetailedVision && "Sair"}
           </Button>
         </div>
       </aside>
@@ -101,7 +104,7 @@ export default function AppLayout() {
           <span className="font-semibold">{settings.app_name}</span>
           <div className="w-10" />
         </header>
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+        <div className={cn("flex-1 overflow-auto", isDetailedVision ? "p-0" : "p-4 sm:p-6 lg:p-8")}>
           <Outlet />
         </div>
       </main>
