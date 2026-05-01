@@ -516,7 +516,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={-12}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--primary))"
-                data={[55, 52, 50, 53, 49, 47, 48]}
+                data={[55, 48, 58, 45, 60, 47, 52, 44, 50]}
               />
               <PerfCard
                 label="Taxa de sucesso"
@@ -524,7 +524,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={2.4}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--success))"
-                data={[96, 97, 98, 97.5, 98, 98.5, 98.6]}
+                data={[96, 99, 95, 98.5, 96.5, 99.2, 97, 98.8, 98.6]}
               />
               <PerfCard
                 label="Processos concluídos"
@@ -532,7 +532,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 trend={6}
                 trendLabel="vs. período anterior"
                 color="hsl(var(--primary))"
-                data={[18, 19, 20, 22, 21, 23, 24]}
+                data={[18, 22, 17, 24, 19, 25, 21, 26, 24]}
                 trendIsAbsolute
               />
             </div>
