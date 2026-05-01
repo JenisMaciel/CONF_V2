@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 import AppLayout from "./components/app/AppLayout";
 import Recebimento from "./pages/app/Recebimento";
+import Workflow from "./pages/app/Workflow";
 import Conferencia from "./pages/app/Conferencia";
 import Divergencias from "./pages/app/Divergencias";
 import Historico from "./pages/app/Historico";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<Recebimento />} />
+              <Route path="workflow" element={<Workflow />} />
               <Route path="conferencia" element={<Conferencia />} />
               
               <Route path="divergencias" element={<Divergencias />} />

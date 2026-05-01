@@ -5,7 +5,7 @@ import { useAppSettings } from "@/hooks/useAppSettings";
 import { Button } from "@/components/ui/button";
 import {
   PackageCheck, ScanBarcode, AlertTriangle, History,
-  Settings, LogOut, Menu, X, PackageOpen, Archive
+  Settings, LogOut, Menu, X, PackageOpen, Archive, ListOrdered
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: "/app", label: "Recebimento", icon: PackageOpen },
+  { to: "/app/workflow", label: "Workflow", icon: ListOrdered },
   { to: "/app/conferencia", label: "Processo em Conferência", icon: ScanBarcode },
   { to: "/app/divergencias", label: "Gestão de Divergência", icon: AlertTriangle, adminOnly: true },
   { to: "/app/historico", label: "Histórico", icon: History, adminOnly: true },
