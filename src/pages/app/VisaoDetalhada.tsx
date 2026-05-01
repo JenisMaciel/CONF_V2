@@ -452,7 +452,7 @@ function CircularDial({ value }: { value: string }) {
 }
 
 function TimelineStep({
-  icon, title, date, description, status, tone, done, pulsing,
+  icon, title, date, description, status, tone, done, pulsing, className,
 }: {
   icon: "mail" | "play" | "check";
   title: string;
@@ -462,11 +462,12 @@ function TimelineStep({
   tone: "primary" | "success" | "warning";
   done: boolean;
   pulsing?: boolean;
+  className?: string;
 }) {
   const toneVar = tone === "success" ? "--success" : tone === "warning" ? "--warning" : "--primary";
   const iconNode = icon === "mail" ? <Mail className="h-4 w-4" /> : icon === "play" ? <PlayCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />;
   return (
-    <div className="pt-[28px] flex flex-col items-center text-center min-w-0">
+    <div className={cn("flex flex-col items-center text-center min-w-0", className)}>
       <div
         className={cn("h-39px h-[39px] w-[39px] rounded-full border-2 flex items-center justify-center mb-2 bg-warning/15", pulsing && "animate-pulse")}
         style={{
@@ -482,6 +483,24 @@ function TimelineStep({
       <p className="mt-1 text-[8px] leading-tight text-muted-foreground max-w-[95px]">{date}</p>
       <p className="text-[8px] leading-tight text-muted-foreground max-w-[95px] truncate">{description}</p>
       <span className="mt-1.5 rounded-full border px-2 py-0.5 text-[8px] font-bold" style={{ color: `hsl(var(${toneVar}))`, borderColor: `hsl(var(${toneVar}) / 0.4)`, background: `hsl(var(${toneVar}) / 0.13)` }}>{status}</span>
+    </div>
+  );
+}
+
+function TimePill({ className, label, value }: { className: string; label: string; value: string }) {
+  return (
+    <div className={cn("absolute z-30 min-w-[96px] rounded-md border border-warning/60 px-3 py-1 text-center shadow-[0_0_13px_hsl(var(--warning)/0.62)]", className)} style={{ background: "linear-gradient(180deg, hsl(var(--warning)), hsl(var(--warning) / 0.72))" }}>
+      <p className="text-[8px] leading-tight text-foreground/80">{label}</p>
+      <p className="text-[13px] font-black leading-tight text-foreground tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function TimelineInfo({ className, value }: { className: string; value: string }) {
+  const [label, ...rest] = value.split(":");
+  return (
+    <div className={cn("absolute z-30 rounded-md border border-border/70 px-2 py-1 text-[9px] font-semibold leading-tight whitespace-nowrap shadow-[0_0_9px_hsl(var(--primary)/0.2)]", className)} style={{ background: "hsl(var(--card) / 0.88)" }}>
+      {label}: <span className="text-foreground">{rest.join(":").trim()}</span>
     </div>
   );
 }
