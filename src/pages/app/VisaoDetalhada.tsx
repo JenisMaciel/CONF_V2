@@ -417,16 +417,6 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
             </div>
           );
         })()}
-            <TimelineNode
-              icon={<CheckCircle2 className="h-7 w-7" />}
-              tone="success"
-              title="CONFERÊNCIA FINALIZADA"
-              date={fmtDateTime(row.finalizada_em)}
-              description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"}
-              done={concluido}
-            />
-          </div>
-        </div>
       </Card>
 
       {/* Cards inferiores */}
