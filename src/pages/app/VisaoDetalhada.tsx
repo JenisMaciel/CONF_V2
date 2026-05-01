@@ -403,7 +403,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           }
 
           return (
-            <div className="flex items-start w-full">
+            <div className="flex items-start w-full pb-32">
               {nodes.map((n, i) => (
                 <div key={i} className="flex items-start flex-1 last:flex-none">
                   <TimelineNode {...n} />
