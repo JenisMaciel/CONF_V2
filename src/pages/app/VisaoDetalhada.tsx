@@ -486,7 +486,19 @@ function Row2({ label, value, highlight }: { label: string; value: string; highl
   );
 }
 
-function TimelineNode({
+function RowSplit({ label, current, total }: { label: string; current: number; total: number }) {
+  const complete = current >= total && total > 0;
+  const colorCurrent = complete ? "text-success" : "text-warning";
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="tabular-nums font-semibold">
+        <span className={colorCurrent}>{fmtNum(current)}</span>
+        <span className="text-muted-foreground">/{fmtNum(total)}</span>
+      </span>
+    </div>
+  );
+}
   icon, tone, title, date, description, done, labelTop, valueTop, pulsing, statusLabel: customStatus,
 }: {
   icon: React.ReactNode;
