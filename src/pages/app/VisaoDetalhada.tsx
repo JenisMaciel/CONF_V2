@@ -7,9 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft, Loader2,
-  Copy, Activity, Box, AlertTriangle, Trophy, Printer, Plus, Download, TrendingUp, TrendingDown, FileSearch, Zap, ChevronRight,
+  BarChart3, Clock, Search, FileText, Calendar, User, PlayCircle, ArrowLeft,
+  Copy, ChevronRight,
 } from "lucide-react";
+import forkliftImg from "@/assets/timeline-forklift.png";
+import scannerImg from "@/assets/timeline-scanner.png";
+import gridBoxesImg from "@/assets/timeline-grid-boxes.png";
+import shelfImg from "@/assets/timeline-shelf.png";
+import warehouseBg from "@/assets/warehouse-bg.jpg";
 
 const fmtDateTime = (s?: string | null) => {
   if (!s) return "—";
@@ -228,6 +233,8 @@ export default function VisaoDetalhada() {
   );
 }
 
+/* ============================ DETALHE DO PROCESSO ============================ */
+
 function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
   const concluido = row.status === "finalizada";
   const conferenciaIniciada = !!row.conferencia_inicio;
@@ -248,15 +255,21 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
     ? Math.max(0, Math.min(100, ((row.conferido - row.divergencias) / row.total_qtd_esperada) * 100))
     : 100;
 
-  // SLA: 92% se concluído sem divergências, ou conforme taxa
-  const slaPct = concluido ? Math.round(taxaSucesso) : Math.round(taxaSucesso);
-  const slaCircumference = 2 * Math.PI * 32;
-  const slaOffset = slaCircumference - (slaPct / 100) * slaCircumference;
+  const totalLabel = row.duracaoTotalMs ? fmtDuration(row.duracaoTotalMs) : (emConferencia ? fmtDuration(tempoAndamentoMs) : "—");
+  const ateInicioLabel = row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—";
+  const conferenciaLabel = row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—";
 
   const copyNumero = () => navigator.clipboard?.writeText(row.numero);
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div
+      className="space-y-5 animate-fade-in -m-6 p-6 min-h-screen"
+      style={{
+        backgroundImage: `linear-gradient(180deg, hsl(245 60% 6% / 0.92), hsl(248 55% 8% / 0.96)), url(${warehouseBg})`,
+        backgroundSize: "cover",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Breadcrumb */}
       <nav className="text-sm text-muted-foreground flex items-center gap-1.5">
         <button onClick={onBack} className="text-primary hover:underline">Processos</button>
@@ -264,592 +277,595 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
         <span>Detalhes do Processo</span>
       </nav>
 
-      {/* Cabeçalho - 3 colunas + tempo total */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-        <Card className="p-5 border-border/50 shadow-card">
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-6 items-start">
-            {/* Identificação */}
-            <div className="flex gap-3">
-              <div className="h-12 w-12 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
-                <FileText className="h-6 w-6" />
-              </div>
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-xl font-bold truncate">Processo #{row.numero}</p>
-                  <button onClick={copyNumero} className="text-muted-foreground hover:text-foreground shrink-0">
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-                <p className="text-sm text-muted-foreground">Tipo: {row.categoria}</p>
-                <p className="text-sm text-muted-foreground">Origem: {row.origem ?? "—"}</p>
-                <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 mt-1">Prioridade: Normal</Badge>
-              </div>
+      {/* ============================ CABEÇALHO ============================ */}
+      <Card
+        className="p-6 border-primary/30 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, hsl(252 55% 10% / 0.95), hsl(265 50% 14% / 0.95))",
+          boxShadow: "0 0 40px hsl(280 95% 50% / 0.25), inset 0 0 60px hsl(280 95% 30% / 0.15)",
+        }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_1fr_1fr] gap-6 items-center">
+          {/* Identificação */}
+          <div className="flex gap-3">
+            <div className="h-14 w-14 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 border border-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.5)]">
+              <FileText className="h-7 w-7" />
             </div>
-
-            {/* Status */}
-            <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Status</p>
-              <Badge variant="outline" className={cn("gap-1.5", statusBadgeClass(row.status))}>
-                {statusLabel(row.status)}
-                <span className={cn("h-2 w-2 rounded-full",
-                  row.status === "finalizada" ? "bg-success" :
-                  row.status === "em_conferencia" ? "bg-primary animate-pulse" : "bg-warning"
-                )} />
-              </Badge>
-            </div>
-
-            {/* Recebido em */}
-            <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Recebido em</p>
-              <div className="flex items-center gap-1.5 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{fmtDateTime(row.recebida_em)}</span>
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold truncate">Processo #{row.numero}</p>
+                <button onClick={copyNumero} className="text-muted-foreground hover:text-foreground shrink-0">
+                  <Copy className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-
-            {/* Responsável */}
-            <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Responsável</p>
-              <div className="flex items-center gap-1.5 text-sm">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span>{row.responsavel ?? "—"}</span>
+              <p className="text-sm text-muted-foreground">Tipo: {row.categoria}</p>
+              <p className="text-sm text-muted-foreground">Origem: {row.origem ?? "—"}</p>
+              <div className="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold text-amber-100 border border-amber-400/60"
+                style={{
+                  background: "linear-gradient(180deg, hsl(40 70% 35%), hsl(35 80% 22%))",
+                  boxShadow: "0 0 10px hsl(40 90% 50% / 0.4), inset 0 1px 0 hsl(45 90% 70% / 0.4)",
+                }}
+              >
+                Prioridade: Normal
               </div>
             </div>
           </div>
-        </Card>
 
-        {/* Tempo total card destacado */}
-        <Card className="p-5 border-primary/30 bg-primary/5 shadow-card min-w-[320px]">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold tracking-widest text-primary">TEMPO TOTAL DO PROCESSO</p>
-              <p className="text-4xl font-bold tabular-nums mt-1">
-                {row.duracaoTotalMs ? fmtDuration(row.duracaoTotalMs).replace(/\s/g, " ") : "—"}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-2">De {fmtDateTime(row.recebida_em)}</p>
-              <p className="text-[11px] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
+          {/* Status / Recebido / Responsável */}
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-xs">Status:</span>
+              <Badge variant="outline" className={cn("font-bold", statusBadgeClass(row.status))}>{statusLabel(row.status)}</Badge>
             </div>
-            {/* Donut SLA */}
-            <div className="relative h-20 w-20 shrink-0">
-              <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90">
-                <circle cx="40" cy="40" r="32" stroke="hsl(var(--border))" strokeWidth="6" fill="none" />
-                <circle
-                  cx="40" cy="40" r="32"
-                  stroke="hsl(var(--success))"
-                  strokeWidth="6"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={slaCircumference}
-                  strokeDashoffset={slaOffset}
-                  className="transition-all"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-base font-bold text-success">{slaPct}%</span>
+            <div className="flex items-start gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Recebido em:</p>
+                <p>{fmtDateTime(row.recebida_em)}</p>
               </div>
-              <p className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground whitespace-nowrap">Dentro do SLA</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Responsável:</p>
+                <p>{row.responsavel ?? "—"}</p>
+              </div>
             </div>
           </div>
-        </Card>
-      </div>
 
-      {/* Linha do Tempo */}
-      <Card className="p-5 border-border/50 shadow-card">
-        <h2 className="font-semibold mb-6 flex items-center gap-2 text-sm">
-          <BarChart3 className="h-4 w-4 text-primary" /> Linha do Tempo do Processo
-        </h2>
-        {(() => {
-          const nodes = [
-            {
-              icon: <Inbox className="h-7 w-7" />,
-              tone: "success" as const,
-              title: "RECEBIMENTO",
-              date: fmtDateTime(row.recebida_em),
-              description: "Processo recebido no sistema",
-              done: !!row.recebida_em,
-            },
-            {
-              icon: <PlayCircle className="h-7 w-7" />,
-              tone: "primary" as const,
-              title: "INÍCIO DA CONFERÊNCIA",
-              date: fmtDateTime(row.conferencia_inicio),
-              description: "Conferência iniciada",
-              done: conferenciaIniciada,
-              pulsing: emConferencia,
-            },
-            {
-              icon: <CheckCircle2 className="h-7 w-7" />,
-              tone: "success" as const,
-              title: "CONFERÊNCIA FINALIZADA",
-              date: fmtDateTime(row.finalizada_em),
-              description: concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização",
-              done: concluido,
-            },
-          ];
-          const segments = [
-            {
-              label: "Tempo até início",
-              value: row.duracaoAteInicioMs ? fmtDuration(row.duracaoAteInicioMs) : "—",
-              color: "success" as const,
-              active: conferenciaIniciada,
-            },
-            {
-              label: emConferencia ? "Tempo decorrido" : "Tempo de conferência",
-              value: emConferencia
-                ? fmtDuration(tempoAndamentoMs)
-                : (row.duracaoConferenciaMs ? fmtDuration(row.duracaoConferenciaMs) : "—"),
-              color: "primary" as const,
-              active: concluido || emConferencia,
-              pulsing: emConferencia,
-            },
-          ];
+          {/* Anel circular grande central */}
+          <div className="flex items-center justify-center">
+            <CircularDial value={totalLabel} />
+          </div>
 
-          return (
-            <div className="flex items-start w-full pb-2 pt-8">
-              {nodes.map((n, i) => (
-                <div key={i} className={cn("flex items-start", i < nodes.length - 1 ? "flex-1" : "")}>
-                  <TimelineNode {...n} />
-                  {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center min-w-0 px-1 relative" style={{ height: 64, marginLeft: -58, marginRight: -58 }}>
-                      {/* Label acima da linha */}
-                      <div className="absolute left-0 right-0 -top-7 flex flex-col items-center">
-                        <p className="text-[11px] text-muted-foreground">{segments[i].label}</p>
-                        <p className={cn("text-sm font-semibold tabular-nums leading-tight",
-                          segments[i].color === "success" ? "text-success" : "text-primary"
-                        )}>
-                          {segments[i].value}
-                        </p>
-                      </div>
-                      {/* Linha neon centralizada nos círculos (h=64, centro=32) */}
-                      <div
-                        className={cn(
-                          "absolute left-0 right-0 h-[2px] rounded-full",
-                          segments[i].active
-                            ? segments[i].color === "success"
-                              ? "bg-success shadow-[0_0_8px_hsl(var(--success)),0_0_16px_hsl(var(--success)/0.6)]"
-                              : "bg-primary shadow-[0_0_8px_hsl(var(--primary)),0_0_16px_hsl(var(--primary)/0.6)]"
-                            : "bg-border",
-                          segments[i].pulsing && "animate-pulse"
-                        )}
-                        style={{ top: 31 }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+          {/* Card TEMPO TOTAL */}
+          <div
+            className="rounded-2xl p-5 border border-primary/40 relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, hsl(265 60% 16% / 0.9), hsl(280 60% 12% / 0.9))",
+              boxShadow: "0 0 25px hsl(280 95% 50% / 0.35), inset 0 0 30px hsl(280 95% 40% / 0.2)",
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <p className="text-[10px] font-bold tracking-widest text-primary-glow">TEMPO TOTAL DO PROCESSO</p>
+              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center border border-primary/40">
+                <Clock className="h-4 w-4 text-primary" />
+              </div>
             </div>
-          );
-        })()}
+            <p className="text-4xl font-bold tabular-nums mt-2 text-primary-glow drop-shadow-[0_0_10px_hsl(var(--primary)/0.7)]">{totalLabel}</p>
+            <p className="text-[11px] text-muted-foreground mt-2">De {fmtDateTime(row.recebida_em)}</p>
+            <p className="text-[11px] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
+          </div>
+        </div>
       </Card>
 
-      {/* 3 colunas: Detalhes do Tempo | Resumo + Desempenho | Atividade */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr_1fr] gap-4">
-        {/* COLUNA 1: Detalhes do Tempo */}
+      {/* ============================ LINHA DO TEMPO ============================ */}
+      <div className="space-y-2">
+        <h2 className="font-bold text-lg flex items-center gap-2 px-1">
+          <BarChart3 className="h-5 w-5 text-primary" /> Linha do Tempo do Processo
+        </h2>
+
+        <div className="relative pt-12 pb-4">
+          {/* Linha horizontal de fundo - laranja suave */}
+          <div
+            className="absolute left-[7%] right-[7%] h-[2px] rounded-full"
+            style={{
+              top: "calc(3rem + 56px)",
+              background: "linear-gradient(90deg, hsl(25 100% 60% / 0.8), hsl(25 100% 60% / 0.4), hsl(25 100% 60% / 0.8))",
+              boxShadow: "0 0 8px hsl(25 100% 60% / 0.6)",
+            }}
+          />
+
+          <div className="grid grid-cols-7 gap-2 items-start relative">
+            {/* RECEBIMENTO */}
+            <TimelineStep
+              icon="mail"
+              tone="warning"
+              title="RECEBIMENTO"
+              date={fmtDateTime(row.recebida_em)}
+              description="Ao recebido no sistema"
+              status="Concluído"
+              done={!!row.recebida_em}
+            />
+
+            {/* Empilhadeira + pill tempo até início */}
+            <TimelineIllustration
+              img={forkliftImg}
+              alt="Empilhadeira"
+              pillLabel="Tempo até início"
+              pillValue={ateInicioLabel}
+              extraInfo={{ label: "Volume Total Recebido:", value: "10 Pallets" }}
+            />
+
+            {/* INÍCIO DA CONFERÊNCIA */}
+            <TimelineStep
+              icon="play"
+              tone="primary"
+              title="INÍCIO DA CONFERÊNCIA"
+              date={fmtDateTime(row.conferencia_inicio)}
+              description="Conferência iniciada"
+              status={conferenciaIniciada ? "Concluído" : "Pendente"}
+              done={conferenciaIniciada}
+              pulsing={emConferencia}
+            />
+
+            {/* Scanner + grid boxes */}
+            <TimelineIllustration
+              img={scannerImg}
+              alt="Scanner e caixas"
+              extraInfo={{ label: "Volume Total Recebido:", value: `${row.skus_conferidos || 1} Pallets` }}
+            />
+
+            {/* GRID INTERMEDIÁRIO (caixas no chão) */}
+            <div className="flex flex-col items-center pt-2">
+              <img src={gridBoxesImg} alt="Layout" loading="lazy" className="h-28 w-auto object-contain drop-shadow-[0_0_15px_hsl(var(--primary)/0.4)]" />
+            </div>
+
+            {/* CONFERÊNCIA + pill tempo de conferência */}
+            <TimelineIllustration
+              img={shelfImg}
+              alt="Prateleira finalizada"
+              pillLabel="Tempo de conferência"
+              pillValue={conferenciaLabel}
+              extraInfo={{ label: "Volume Total Recebido:", value: "12 Pallets" }}
+            />
+
+            {/* CONFERÊNCIA FINALIZADA */}
+            <TimelineStep
+              icon="check"
+              tone="success"
+              title="CONFERÊNCIA FINALIZADA"
+              date={fmtDateTime(row.finalizada_em)}
+              description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"}
+              status={concluido ? "Concluído" : "Pendente"}
+              done={concluido}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ============================ 3 COLUNAS INFERIORES ============================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr_1fr] gap-4">
+        {/* COL 1: Detalhes do Tempo */}
         <Card className="p-5 border-border/50 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-primary" /> Detalhes do Tempo
-          </h3>
+          <h3 className="font-bold mb-4 text-base">Detalhes do Tempo</h3>
           <div className="space-y-3 text-sm">
-            <RowKV icon={<Calendar className="h-3.5 w-3.5" />} label="Recebido em:" value={fmtDateTime(row.recebida_em)} />
-            <RowKV icon={<PlayCircle className="h-3.5 w-3.5" />} label="Início da conferência:" value={fmtDateTime(row.conferencia_inicio)} />
-            <RowKV icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Finalização da conferência:" value={fmtDateTime(row.finalizada_em)} />
+            <Kv label="Recebido em:" value={fmtDateTime(row.recebida_em)} />
+            <Kv label="Início da conferência:" value={fmtDateTime(row.conferencia_inicio)} />
+            <Kv label="Finalização da conferência:" value={fmtDateTime(row.finalizada_em)} />
             <div className="border-t border-border/60 my-3" />
-            <Row2 label="Tempo total do processo:" value={fmtDuration(row.duracaoTotalMs ?? 0)} highlight="primary" />
-            <Row2 label="Tempo até início:" value={fmtDuration(row.duracaoAteInicioMs ?? 0)} highlight="success" />
-            <Row2 label="Tempo de conferência:" value={fmtDuration(row.duracaoConferenciaMs ?? 0)} highlight="primary" />
+            <Kv label="Duração de Recebimento:" value={ateInicioLabel} valueClass="text-primary font-semibold" />
+            <Kv label="Duração de Conferência:" value={conferenciaLabel} valueClass="text-primary font-semibold" />
+          </div>
+
+          <div className="mt-5">
+            <h4 className="font-bold text-sm mb-2">Micro-log:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-4">
+              <li>Recebido em processo início → Concluído</li>
+              <li>Conferencia da conferência → <span className="text-foreground font-semibold">Início de Conferência</span></li>
+              <li>Conferencia da conferência → status de Confirmação</li>
+            </ul>
           </div>
         </Card>
 
-        {/* COLUNA 2: Resumo do Processo + Desempenho */}
+        {/* COL 2: Mini cards + Gráfico Comparativo */}
         <div className="space-y-4">
+          {/* 4 mini cards: 100% donut, Quantidade barras, SKUs barras, Divergência */}
           <Card className="p-5 border-border/50 shadow-card">
-            <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-              <BarChart3 className="h-4 w-4 text-primary" /> Resumo do Processo
-            </h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricBox
-                label="SKUs conferidos"
-                current={row.skus_conferidos}
-                total={row.total_itens}
-                icon={<Box className="h-4 w-4" />}
-                color="primary"
+            <div className="grid grid-cols-4 gap-3">
+              <DonutMini value={Math.round(taxaSucesso)} />
+              <BarsMini
+                label="Quantidade conferida:"
+                colors={["hsl(220 30% 70%)", "hsl(150 70% 55%)", "hsl(25 100% 60%)", "hsl(280 95% 65%)"]}
+                heights={[40, 60, 75, 95]}
               />
-              <MetricBox
-                label="Quantidade conferida"
-                current={row.conferido}
-                total={row.total_qtd_esperada}
-                icon={<Activity className="h-4 w-4" />}
-                color="success"
+              <SkusMini
+                label="SKUs conferidos:"
+                value={`${row.skus_conferidos}/${row.total_itens || 7}`}
               />
-              <MetricBox
-                label="Itens com divergência"
-                current={row.divergencias}
-                icon={<AlertTriangle className="h-4 w-4" />}
-                color={row.divergencias > 0 ? "destructive" : "warning"}
-              />
-              <MetricBox
-                label="Taxa de sucesso"
-                value={`${taxaSucesso.toFixed(0)}%`}
-                icon={<Trophy className="h-4 w-4" />}
-                color="purple"
-              />
+              <DivergenciaMini value={row.divergencias} />
             </div>
-            {concluido && row.divergencias === 0 && (
-              <div className="mt-4 rounded-lg border border-success/30 bg-success/10 px-4 py-2.5 text-sm text-center text-success font-medium flex items-center justify-center gap-2">
-                <span>Processo concluído com sucesso!</span>
-                <span>🎉</span>
-              </div>
-            )}
           </Card>
 
+          {/* Gráfico Comparativo */}
           <Card className="p-5 border-border/50 shadow-card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold flex items-center gap-2 text-sm">
-                <TrendingUp className="h-4 w-4 text-primary" /> Desempenho dos Processos
-              </h3>
-              <Badge variant="outline" className="text-xs">Últimos 7 dias</Badge>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <PerfCard
-                label="Tempo médio"
-                value="48 min"
-                trend={-12}
-                trendLabel="vs. período anterior"
-                color="hsl(var(--primary))"
-                data={[55, 48, 58, 45, 60, 47, 52, 44, 50]}
-              />
-              <PerfCard
-                label="Taxa de sucesso"
-                value="98,6%"
-                trend={2.4}
-                trendLabel="vs. período anterior"
-                color="hsl(var(--success))"
-                data={[96, 99, 95, 98.5, 96.5, 99.2, 97, 98.8, 98.6]}
-              />
-              <PerfCard
-                label="Processos concluídos"
-                value="24"
-                trend={6}
-                trendLabel="vs. período anterior"
-                color="hsl(var(--primary))"
-                data={[18, 22, 17, 24, 19, 25, 21, 26, 24]}
-                trendIsAbsolute
-              />
-            </div>
+            <h3 className="text-center text-sm font-bold mb-3">
+              <span className="text-muted-foreground">COMPARATIVO DE DESEMPENHO: </span>
+              <span className="text-success">ATUAL</span>
+              <span className="text-muted-foreground"> vs. ANTERIOR </span>
+              <span className="text-primary">PROCESSO ANTERIOR (#{(parseInt(row.numero) - 1) || row.numero})</span>
+            </h3>
+            <ComparativoChart numero={row.numero} />
           </Card>
         </div>
 
-        {/* COLUNA 3: Atividade do Processo */}
-        <Card className="p-5 border-border/50 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-            <Activity className="h-4 w-4 text-primary" /> Atividade do Processo
-          </h3>
-          <div className="space-y-4">
-            <ActivityItem
-              icon={<CheckCircle2 className="h-4 w-4" />}
-              tone="success"
-              title="Processo recebido"
-              description="Processo importado com sucesso"
-              time={row.recebida_em ? new Date(row.recebida_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
-              show={!!row.recebida_em}
-            />
-            <ActivityItem
-              icon={<PlayCircle className="h-4 w-4" />}
-              tone="primary"
-              title="Conferência iniciada"
-              description="Início da conferência dos itens"
-              time={row.conferencia_inicio ? new Date(row.conferencia_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
-              show={!!row.conferencia_inicio}
-            />
-            <ActivityItem
-              icon={<CheckCircle2 className="h-4 w-4" />}
-              tone="success"
-              title="Verificações concluídas"
-              description="Todos os itens conferidos"
-              time={row.finalizada_em ? new Date(row.finalizada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
-              show={concluido}
-            />
-            <ActivityItem
-              icon={<CheckCircle2 className="h-4 w-4" />}
-              tone="success"
-              title="Processo finalizado"
-              description="Conferência finalizada com sucesso"
-              time={row.finalizada_em ? new Date(row.finalizada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
-              show={concluido}
-            />
-            <ActivityItem
-              icon={<FileSearch className="h-4 w-4" />}
-              tone="muted"
-              title="Resultado"
-              description={row.divergencias > 0 ? `${row.divergencias} divergência(s)` : "Nenhuma divergência encontrada"}
-              time={row.finalizada_em ? new Date(row.finalizada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
-              show={concluido}
-            />
-          </div>
-          <Button variant="outline" className="w-full mt-4 gap-2 border-primary/30 text-primary hover:bg-primary/10">
-            Ver todas as atividades <ChevronRight className="h-4 w-4" />
-          </Button>
-        </Card>
+        {/* COL 3: Observações & Log Recente */}
+        <div className="space-y-4">
+          <Card className="p-5 border-border/50 shadow-card">
+            <h3 className="font-bold mb-3 text-base">Observações &amp; Log Recente:</h3>
+            <p className="text-sm text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
+          </Card>
+          <Card className="p-5 border-border/50 shadow-card">
+            <h3 className="font-bold mb-3 text-base">Log Recente:</h3>
+            <LogList numero={row.numero} />
+          </Card>
+        </div>
       </div>
 
-      {/* Rodapé: Ações rápidas + Observações */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
-        <Card className="p-5 border-border/50 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
-            <Zap className="h-4 w-4 text-primary" /> Ações rápidas
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" /> Exportar relatório</Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}><Printer className="h-4 w-4" /> Imprimir</Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={onBack}><Plus className="h-4 w-4" /> Novo processo</Button>
-          </div>
-        </Card>
-        <Card className="p-5 border-border/50 shadow-card">
-          <h3 className="font-semibold mb-3 flex items-center gap-2 text-sm">
-            <FileText className="h-4 w-4 text-primary" /> Observações
-          </h3>
-          <p className="text-sm text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
-        </Card>
-      </div>
-
-      <div className="flex justify-start">
-        <Button variant="ghost" onClick={onBack} className="gap-2 text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar para lista</Button>
+      <div className="flex justify-start pt-2">
+        <Button variant="ghost" onClick={onBack} className="gap-2 text-muted-foreground">
+          <ArrowLeft className="h-4 w-4" /> Voltar para lista
+        </Button>
       </div>
     </div>
   );
 }
 
-function Row2({ label, value, highlight }: { label: string; value: string; highlight?: "success" | "primary" | "destructive" }) {
-  const cls =
-    highlight === "success" ? "text-success font-semibold"
-    : highlight === "primary" ? "text-primary font-semibold"
-    : highlight === "destructive" ? "text-destructive font-semibold"
-    : "font-medium";
+/* ============================ COMPONENTES VISUAIS ============================ */
+
+function CircularDial({ value }: { value: string }) {
+  // Tick marks around a ring with central value
+  const ticks = Array.from({ length: 60 });
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`tabular-nums ${cls}`}>{value}</span>
-    </div>
-  );
-}
-
-function RowKV({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-muted-foreground flex items-center gap-1.5">{icon} {label}</span>
-      <span className="tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-function MetricBox({
-  label, current, total, value, icon, color,
-}: {
-  label: string;
-  current?: number;
-  total?: number;
-  value?: string;
-  icon: React.ReactNode;
-  color: "primary" | "success" | "warning" | "destructive" | "purple";
-}) {
-  const palette: Record<string, { text: string; bar: string; glow: string; iconBg: string }> = {
-    primary: {
-      text: "text-primary",
-      bar: "bg-primary",
-      glow: "shadow-[0_0_20px_hsl(var(--primary)/0.5)]",
-      iconBg: "bg-primary/10 text-primary",
-    },
-    success: {
-      text: "text-success",
-      bar: "bg-success",
-      glow: "shadow-[0_0_20px_hsl(var(--success)/0.5)]",
-      iconBg: "bg-success/10 text-success",
-    },
-    warning: {
-      text: "text-warning",
-      bar: "bg-warning",
-      glow: "shadow-[0_0_20px_hsl(var(--warning)/0.5)]",
-      iconBg: "bg-warning/10 text-warning",
-    },
-    destructive: {
-      text: "text-destructive",
-      bar: "bg-destructive",
-      glow: "shadow-[0_0_20px_hsl(var(--destructive)/0.5)]",
-      iconBg: "bg-destructive/10 text-destructive",
-    },
-    purple: {
-      text: "text-[hsl(270_95%_70%)]",
-      bar: "bg-[hsl(270_95%_65%)]",
-      glow: "shadow-[0_0_20px_hsl(270_95%_65%/0.5)]",
-      iconBg: "bg-[hsl(270_95%_65%/0.12)] text-[hsl(270_95%_75%)]",
-    },
-  };
-  const p = palette[color];
-  const complete = total !== undefined && current !== undefined && current >= total && total > 0;
-
-  return (
-    <div className="relative overflow-hidden rounded-lg border border-border/50 bg-card/40 p-3 pb-4">
-      <div className="flex items-start justify-between mb-2">
-        <p className="text-[11px] text-muted-foreground leading-tight">{label}</p>
-        <span className={cn("inline-flex h-7 w-7 items-center justify-center rounded-md", p.iconBg)}>{icon}</span>
-      </div>
-      {value !== undefined ? (
-        <p className={cn("text-2xl font-bold tabular-nums", p.text)}>{value}</p>
-      ) : total !== undefined ? (
-        <p className="text-2xl font-bold tabular-nums flex items-center gap-1.5">
-          <span className={complete ? "text-success" : "text-warning"}>{fmtNum(current ?? 0)}</span>
-          <span className="text-muted-foreground text-base">/{fmtNum(total)}</span>
-          {complete && <CheckCircle2 className="h-4 w-4 text-success" />}
-        </p>
-      ) : (
-        <p className={cn("text-2xl font-bold tabular-nums", p.text)}>{fmtNum(current ?? 0)}</p>
-      )}
-      <div className={cn("absolute left-0 right-0 bottom-0 h-[3px]", p.bar, p.glow)} />
-    </div>
-  );
-}
-
-function PerfCard({
-  label, value, trend, trendLabel, color, data, trendIsAbsolute,
-}: {
-  label: string;
-  value: string;
-  trend: number;
-  trendLabel: string;
-  color: string;
-  data: number[];
-  trendIsAbsolute?: boolean;
-}) {
-  const positive = trend >= 0;
-  // Build smooth wavy sparkline path (Catmull-Rom -> Bezier)
-  const w = 100, h = 32;
-  const padY = 4;
-  const min = Math.min(...data), max = Math.max(...data);
-  const range = max - min || 1;
-  const pts = data.map((v, i) => ({
-    x: (i / (data.length - 1)) * w,
-    y: padY + (h - padY * 2) - ((v - min) / range) * (h - padY * 2),
-  }));
-
-  // Smooth curve using cubic bezier between points
-  let d = `M ${pts[0].x},${pts[0].y}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] || pts[i];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2] || p2;
-    const t = 0.2;
-    const c1x = p1.x + (p2.x - p0.x) * t;
-    const c1y = p1.y + (p2.y - p0.y) * t;
-    const c2x = p2.x - (p3.x - p1.x) * t;
-    const c2y = p2.y - (p3.y - p1.y) * t;
-    d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y}`;
-  }
-  const area = `${d} L ${w},${h} L 0,${h} Z`;
-  const gradId = `pgrad-${label.replace(/\s+/g, "-")}`;
-
-  return (
-    <div className="rounded-lg border border-border/50 bg-card/40 p-3 flex flex-col">
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p className="text-xl font-bold tabular-nums mt-1">{value}</p>
-      <p className={cn("text-[11px] mt-0.5 flex items-center gap-1", positive ? "text-success" : "text-destructive")}>
-        {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-        {positive ? "+" : ""}{trendIsAbsolute ? trend : `${trend}%`} <span className="text-muted-foreground">{trendLabel}</span>
-      </p>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-10 mt-2 overflow-visible" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.45" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={area} fill={`url(#${gradId})`} />
-        <path
-          d={d}
-          fill="none"
-          stroke={color}
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ filter: `drop-shadow(0 0 3px ${color}) drop-shadow(0 0 6px ${color})` }}
+    <div className="relative h-[180px] w-[180px]">
+      {/* outer glow ring */}
+      <div className="absolute inset-0 rounded-full"
+        style={{ boxShadow: "0 0 40px hsl(280 100% 55% / 0.55), inset 0 0 25px hsl(280 100% 55% / 0.4)" }}
+      />
+      <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="hsl(280 60% 30% / 0.4)" strokeWidth="2" />
+        <circle cx="100" cy="100" r="78" fill="none" stroke="hsl(25 100% 60%)" strokeWidth="3"
+          strokeDasharray="490" strokeDashoffset="98" strokeLinecap="round"
+          style={{ filter: "drop-shadow(0 0 6px hsl(25 100% 60%))" }}
         />
+        <circle cx="100" cy="100" r="78" fill="none" stroke="hsl(280 95% 65%)" strokeWidth="3"
+          strokeDasharray="490" strokeDashoffset="-340" strokeLinecap="round"
+          style={{ filter: "drop-shadow(0 0 6px hsl(280 95% 65%))" }}
+        />
+        {ticks.map((_, i) => {
+          const angle = (i / 60) * 360;
+          const isMajor = i % 5 === 0;
+          return (
+            <line
+              key={i}
+              x1="100" y1="14"
+              x2="100" y2={isMajor ? 22 : 18}
+              stroke={isMajor ? "hsl(280 95% 70%)" : "hsl(280 60% 50% / 0.6)"}
+              strokeWidth={isMajor ? 1.6 : 0.8}
+              transform={`rotate(${angle} 100 100)`}
+              style={isMajor ? { filter: "drop-shadow(0 0 2px hsl(280 95% 70%))" } : undefined}
+            />
+          );
+        })}
       </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-3xl font-bold text-primary-glow tabular-nums drop-shadow-[0_0_8px_hsl(var(--primary)/0.8)]">
+          {value}
+        </span>
+      </div>
     </div>
   );
 }
 
-function ActivityItem({
-  icon, tone, title, description, time, show,
+function TimelineStep({
+  icon, tone, title, date, description, status, done, pulsing,
 }: {
-  icon: React.ReactNode;
-  tone: "success" | "primary" | "muted";
-  title: string;
-  description: string;
-  time: string;
-  show: boolean;
-}) {
-  const toneClass = {
-    success: "bg-success/15 text-success border-success/30",
-    primary: "bg-primary/15 text-primary border-primary/30",
-    muted: "bg-muted text-muted-foreground border-border",
-  }[tone];
-
-  return (
-    <div className={cn("flex items-start gap-3", !show && "opacity-40")}>
-      <div className={cn("h-8 w-8 rounded-full border flex items-center justify-center shrink-0", toneClass)}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{title}</p>
-        <p className="text-xs text-muted-foreground truncate">{description}</p>
-      </div>
-      <span className="text-xs text-muted-foreground tabular-nums shrink-0">{time}</span>
-    </div>
-  );
-}
-
-function TimelineNode({
-  icon, tone, title, date, description, done, pulsing,
-}: {
-  icon: React.ReactNode;
-  tone: "success" | "primary";
+  icon: "mail" | "play" | "check";
+  tone: "primary" | "success" | "warning";
   title: string;
   date: string;
   description: string;
+  status: string;
   done: boolean;
   pulsing?: boolean;
 }) {
-  const ring = tone === "success"
-    ? "bg-success/15 text-success border-success"
-    : "bg-primary/15 text-primary border-primary";
-  const glow = tone === "success"
-    ? "shadow-[0_0_12px_hsl(var(--success)/0.9),0_0_28px_hsl(var(--success)/0.5),inset_0_0_10px_hsl(var(--success)/0.25)]"
-    : "shadow-[0_0_12px_hsl(var(--primary)/0.9),0_0_28px_hsl(var(--primary)/0.5),inset_0_0_10px_hsl(var(--primary)/0.25)]";
-  const valueColor = tone === "success" ? "text-success" : "text-primary";
+  const toneVar = tone === "success" ? "var(--success)" : tone === "warning" ? "var(--warning)" : "var(--primary)";
+  const iconSvg = icon === "mail" ? (
+    <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  ) : icon === "play" ? (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7"><path d="M8 5v14l11-7z" /></svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" stroke="currentColor" strokeWidth="2.5">
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+
   return (
-    <div className="flex flex-col items-center text-center w-[180px] shrink-0">
-      <div className={cn(
-        "h-16 w-16 rounded-full border-2 flex items-center justify-center bg-background",
-        ring,
-        done && glow,
-        !done && "opacity-50",
-        pulsing && "animate-pulse"
-      )}>
-        {icon}
+    <div className="flex flex-col items-center text-center px-1">
+      <div
+        className={cn(
+          "h-14 w-14 rounded-full flex items-center justify-center border-2 mb-3",
+          pulsing && "animate-pulse"
+        )}
+        style={{
+          color: `hsl(${toneVar})`,
+          borderColor: `hsl(${toneVar})`,
+          background: `hsl(${toneVar} / 0.15)`,
+          boxShadow: done
+            ? `0 0 14px hsl(${toneVar} / 0.9), 0 0 28px hsl(${toneVar} / 0.5), inset 0 0 12px hsl(${toneVar} / 0.4)`
+            : `0 0 8px hsl(${toneVar} / 0.4)`,
+        }}
+      >
+        {iconSvg}
       </div>
-      <div className="mt-3 flex flex-col items-center w-full px-1 min-w-0">
-        <p className={cn("text-xs font-bold tracking-wide truncate max-w-full", done ? valueColor : "text-muted-foreground")}>{title}</p>
-        <p className="text-[11px] text-muted-foreground mt-1 tabular-nums truncate max-w-full">{date}</p>
-        <p className="text-[11px] text-muted-foreground/80 mt-0.5 truncate max-w-full">{description}</p>
-        <Badge variant="outline" className={cn("mt-2 text-[10px]",
-          pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse"
-          : done ? "bg-success/15 text-success border-success/30"
-          : "text-muted-foreground"
-        )}>
-          {pulsing ? "Em andamento" : done ? "Concluído" : "Pendente"}
-        </Badge>
+      <p className="text-xs font-bold tracking-wide" style={{ color: `hsl(${toneVar})` }}>{title}</p>
+      <p className="text-[10px] text-muted-foreground mt-1">{date}</p>
+      <p className="text-[10px] text-muted-foreground">{description}</p>
+      <span
+        className="mt-2 inline-flex px-3 py-0.5 rounded-full text-[10px] font-semibold border"
+        style={{
+          color: `hsl(${toneVar})`,
+          borderColor: `hsl(${toneVar} / 0.5)`,
+          background: `hsl(${toneVar} / 0.12)`,
+        }}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+function TimelineIllustration({
+  img, alt, pillLabel, pillValue, extraInfo,
+}: {
+  img: string;
+  alt: string;
+  pillLabel?: string;
+  pillValue?: string;
+  extraInfo?: { label: string; value: string };
+}) {
+  return (
+    <div className="flex flex-col items-center relative">
+      {/* Pill laranja acima da linha (se houver) */}
+      {pillLabel && pillValue && (
+        <div
+          className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-lg text-center min-w-[130px]"
+          style={{
+            background: "linear-gradient(180deg, hsl(28 100% 62%), hsl(18 100% 48%))",
+            boxShadow: "0 0 14px hsl(25 100% 55% / 0.7), inset 0 1px 0 hsl(35 100% 75% / 0.6)",
+            border: "1px solid hsl(35 100% 70% / 0.5)",
+          }}
+        >
+          <p className="text-[10px] text-white/90 font-medium leading-tight">{pillLabel}</p>
+          <p className="text-base font-bold text-white tabular-nums leading-tight">{pillValue}</p>
+        </div>
+      )}
+      <img src={img} alt={alt} loading="lazy" className="h-28 w-auto object-contain drop-shadow-[0_0_18px_hsl(var(--primary)/0.4)]" />
+      {extraInfo && (
+        <div
+          className="mt-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap border border-primary/30"
+          style={{ background: "hsl(248 50% 12% / 0.85)", boxShadow: "0 0 10px hsl(var(--primary) / 0.2)" }}
+        >
+          <span className="text-foreground/90">{extraInfo.label} </span>
+          <span className="text-primary font-bold">{extraInfo.value}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Kv({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("tabular-nums", valueClass)}>{value}</span>
+    </div>
+  );
+}
+
+function DonutMini({ value }: { value: number }) {
+  const c = 2 * Math.PI * 28;
+  const offset = c - (value / 100) * c;
+  return (
+    <div className="flex flex-col items-center justify-center rounded-lg border border-primary/30 p-2"
+      style={{ background: "hsl(248 50% 10% / 0.7)" }}
+    >
+      <div className="relative h-20 w-20">
+        <svg viewBox="0 0 70 70" className="h-full w-full -rotate-90">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="hsl(280 40% 25% / 0.5)" strokeWidth="6" />
+          <circle cx="35" cy="35" r="28" fill="none"
+            stroke="hsl(280 95% 65%)" strokeWidth="6" strokeLinecap="round"
+            strokeDasharray={c} strokeDashoffset={offset}
+            style={{ filter: "drop-shadow(0 0 4px hsl(280 95% 65%))" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-base font-bold text-primary-glow">{value}%</span>
+        </div>
       </div>
     </div>
   );
 }
 
+function BarsMini({ label, colors, heights }: { label: string; colors: string[]; heights: number[] }) {
+  return (
+    <div className="rounded-lg border border-border/50 p-2 flex flex-col" style={{ background: "hsl(248 50% 10% / 0.7)" }}>
+      <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
+      <div className="flex items-end gap-1.5 h-16 mt-auto">
+        {heights.map((h, i) => (
+          <div key={i} className="flex-1 rounded-t-sm"
+            style={{
+              height: `${h}%`,
+              background: colors[i],
+              boxShadow: `0 0 8px ${colors[i]}`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SkusMini({ label, value }: { label: string; value: string }) {
+  // Many small bars in purple/magenta gradient
+  const bars = [30, 45, 35, 55, 65, 75, 85, 70, 80, 90, 88, 95, 92];
+  return (
+    <div className="rounded-lg border border-border/50 p-2 flex flex-col" style={{ background: "hsl(248 50% 10% / 0.7)" }}>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[10px] text-muted-foreground">{label}</p>
+        <p className="text-xs font-bold text-primary tabular-nums">{value}</p>
+      </div>
+      <div className="flex items-end gap-[2px] h-16 mt-auto">
+        {bars.map((h, i) => {
+          const hue = 280 + i * 3;
+          return (
+            <div key={i} className="flex-1 rounded-sm"
+              style={{
+                height: `${h}%`,
+                background: `hsl(${hue} 90% 60%)`,
+                boxShadow: `0 0 4px hsl(${hue} 90% 60%)`,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DivergenciaMini({ value }: { value: number }) {
+  return (
+    <div className="rounded-lg border border-border/50 p-3 flex flex-col items-center justify-center"
+      style={{ background: "hsl(248 50% 10% / 0.7)" }}
+    >
+      <p className="text-[10px] text-muted-foreground">Divergência</p>
+      <p className={cn("text-3xl font-bold tabular-nums mt-2", value > 0 ? "text-destructive" : "text-success")}>
+        ({value})
+      </p>
+    </div>
+  );
+}
+
+function ComparativoChart({ numero }: { numero: string }) {
+  const w = 600, h = 220;
+  const padL = 40, padB = 30, padT = 10, padR = 10;
+  const innerW = w - padL - padR;
+  const innerH = h - padB - padT;
+
+  // Atual: rapidly rises and stays high (~98-100%)
+  const atual = [10, 75, 88, 94, 97, 98, 99, 99, 100, 100, 100, 100];
+  // Anterior: oscillates wave-like
+  const anterior = [5, 48, 45, 40, 60, 78, 55, 45, 50, 70, 75, 60];
+
+  const xs = (i: number, len: number) => padL + (i / (len - 1)) * innerW;
+  const ys = (v: number) => padT + innerH - (v / 100) * innerH;
+
+  const buildPath = (data: number[]) => {
+    const pts = data.map((v, i) => ({ x: xs(i, data.length), y: ys(v) }));
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const t = 0.22;
+      const c1x = p1.x + (p2.x - p0.x) * t;
+      const c1y = p1.y + (p2.y - p0.y) * t;
+      const c2x = p2.x - (p3.x - p1.x) * t;
+      const c2y = p2.y - (p3.y - p1.y) * t;
+      d += ` C ${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y}`;
+    }
+    return d;
+  };
+
+  const dAtual = buildPath(atual);
+  const dAnterior = buildPath(anterior);
+
+  const yTicks = [0, 20, 40, 60, 80, 100];
+  const xTicks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-[260px]" preserveAspectRatio="none">
+        {/* Grid horizontal */}
+        {yTicks.map((t) => (
+          <g key={t}>
+            <line x1={padL} x2={w - padR} y1={ys(t)} y2={ys(t)} stroke="hsl(260 40% 25% / 0.4)" strokeDasharray="3 3" />
+            <text x={padL - 6} y={ys(t) + 3} fontSize="9" fill="hsl(260 20% 70%)" textAnchor="end">{t}%</text>
+          </g>
+        ))}
+        {/* X labels */}
+        {xTicks.map((t, i) => (
+          <text key={t} x={xs(i, xTicks.length)} y={h - 10} fontSize="9" fill="hsl(260 20% 70%)" textAnchor="middle">{t}min</text>
+        ))}
+        {/* Y axis label */}
+        <text x="10" y={padT + innerH / 2} fontSize="9" fill="hsl(260 20% 70%)" transform={`rotate(-90 10 ${padT + innerH / 2})`} textAnchor="middle">Eficiência (%)</text>
+
+        {/* Linha ANTERIOR (magenta) */}
+        <path d={dAnterior} fill="none" stroke="hsl(310 100% 60%)" strokeWidth="2.5" strokeLinecap="round"
+          style={{ filter: "drop-shadow(0 0 4px hsl(310 100% 60%)) drop-shadow(0 0 8px hsl(310 100% 60%))" }}
+        />
+        {anterior.map((v, i) => (
+          <circle key={i} cx={xs(i, anterior.length)} cy={ys(v)} r="3" fill="hsl(310 100% 60%)"
+            style={{ filter: "drop-shadow(0 0 3px hsl(310 100% 60%))" }}
+          />
+        ))}
+
+        {/* Linha ATUAL (ciano) */}
+        <path d={dAtual} fill="none" stroke="hsl(175 100% 55%)" strokeWidth="2.5" strokeLinecap="round"
+          style={{ filter: "drop-shadow(0 0 4px hsl(175 100% 55%)) drop-shadow(0 0 8px hsl(175 100% 55%))" }}
+        />
+        {atual.map((v, i) => (
+          <circle key={i} cx={xs(i, atual.length)} cy={ys(v)} r="3" fill="hsl(175 100% 55%)"
+            style={{ filter: "drop-shadow(0 0 3px hsl(175 100% 55%))" }}
+          />
+        ))}
+
+        {/* Labels nas linhas */}
+        <text x={xs(7, atual.length)} y={ys(atual[7]) - 8} fontSize="10" fill="hsl(175 100% 60%)" textAnchor="middle" fontWeight="bold">PROCESSO ATUAL</text>
+        <text x={xs(7, atual.length)} y={ys(atual[7]) + 4} fontSize="9" fill="hsl(175 100% 60%)" textAnchor="middle">(#{numero})</text>
+
+        <text x={xs(7, anterior.length)} y={ys(anterior[7]) + 16} fontSize="10" fill="hsl(310 100% 65%)" textAnchor="middle" fontWeight="bold">PROCESSO ANTERIOR</text>
+        <text x={xs(7, anterior.length)} y={ys(anterior[7]) + 28} fontSize="9" fill="hsl(310 100% 65%)" textAnchor="middle">(#{(parseInt(numero) - 1) || numero})</text>
+      </svg>
+      <p className="text-center text-[11px] text-muted-foreground mt-1">Tempo de Execução (min)</p>
+    </div>
+  );
+}
+
+function LogList({ numero }: { numero: string }) {
+  const items = [
+    { time: "01:06:13", title: "Scanning SKU123", desc: `Scanning Set SKU123` },
+    { time: "01:06:23", title: "Batch Approval", desc: "Divergence onset complete" },
+    { time: "01:05:23", title: "Scanning SKU8123", desc: "Scanning batch update" },
+    { time: "01:05:23", title: "Batch Approval", desc: "Scanning B-UK123" },
+  ];
+  return (
+    <ul className="space-y-3">
+      {items.map((it, i) => (
+        <li key={i} className="flex gap-3 text-xs">
+          <span className="text-muted-foreground tabular-nums shrink-0 w-14">{it.time}</span>
+          <span className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0 shadow-[0_0_6px_hsl(var(--primary))]" />
+          <div className="min-w-0">
+            <p className="font-semibold text-foreground">{it.title}</p>
+            <p className="text-muted-foreground truncate">{it.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
