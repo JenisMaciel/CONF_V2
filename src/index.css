@@ -4,57 +4,64 @@
 
 @layer base {
   :root {
-    --background: 222 85% 5%;
-    --foreground: 200 30% 96%;
+    /* Deep purple navy from reference image */
+    --background: 245 55% 7%;
+    --foreground: 270 30% 96%;
 
-    --card: 222 70% 8%;
-    --card-foreground: 200 30% 96%;
+    --card: 248 50% 11%;
+    --card-foreground: 270 30% 96%;
 
-    --popover: 222 80% 6%;
-    --popover-foreground: 200 30% 96%;
+    --popover: 248 55% 9%;
+    --popover-foreground: 270 30% 96%;
 
-    --primary: 191 100% 50%;
-    --primary-foreground: 222 85% 5%;
-    --primary-glow: 191 100% 65%;
+    /* Primary = neon magenta/purple */
+    --primary: 280 95% 65%;
+    --primary-foreground: 245 55% 7%;
+    --primary-glow: 290 100% 72%;
 
-    --secondary: 222 50% 12%;
-    --secondary-foreground: 200 30% 96%;
+    --secondary: 248 40% 16%;
+    --secondary-foreground: 270 30% 96%;
 
-    --muted: 222 50% 11%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 248 35% 14%;
+    --muted-foreground: 260 20% 70%;
 
-    --accent: 191 100% 50%;
-    --accent-foreground: 222 85% 5%;
+    --accent: 25 100% 60%;
+    --accent-foreground: 245 55% 7%;
 
-    --success: 150 100% 45%;
-    --success-foreground: 222 85% 5%;
+    /* Cyan / success neon */
+    --success: 175 100% 50%;
+    --success-foreground: 245 55% 7%;
 
-    --warning: 30 100% 55%;
-    --warning-foreground: 222 85% 5%;
+    /* Orange like the timeline pills */
+    --warning: 25 100% 60%;
+    --warning-foreground: 245 55% 7%;
 
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 200 30% 96%;
+    --destructive: 340 95% 62%;
+    --destructive-foreground: 270 30% 96%;
 
-    --border: 215 50% 20%;
-    --input: 222 50% 12%;
-    --ring: 191 100% 50%;
+    --border: 260 40% 22%;
+    --input: 248 40% 16%;
+    --ring: 280 95% 65%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 222 80% 6%;
-    --sidebar-foreground: 200 25% 88%;
-    --sidebar-primary: 191 100% 50%;
-    --sidebar-primary-foreground: 222 85% 5%;
-    --sidebar-accent: 222 50% 11%;
-    --sidebar-accent-foreground: 200 30% 96%;
-    --sidebar-border: 215 50% 16%;
-    --sidebar-ring: 191 100% 50%;
+    --sidebar-background: 248 60% 8%;
+    --sidebar-foreground: 270 25% 88%;
+    --sidebar-primary: 280 95% 65%;
+    --sidebar-primary-foreground: 245 55% 7%;
+    --sidebar-accent: 248 35% 14%;
+    --sidebar-accent-foreground: 270 30% 96%;
+    --sidebar-border: 260 40% 18%;
+    --sidebar-ring: 280 95% 65%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(191 100% 50%), hsl(191 100% 65%));
-    --gradient-card: linear-gradient(135deg, hsl(222 70% 8%), hsl(222 65% 10%));
-    --gradient-hero: linear-gradient(135deg, hsl(222 85% 5%) 0%, hsl(222 80% 7%) 50%, hsl(210 70% 10%) 100%);
-    --shadow-glow: 0 0 30px hsl(191 100% 50% / 0.45), 0 0 60px hsl(191 100% 50% / 0.2);
-    --shadow-card: 0 4px 24px -8px hsl(222 90% 2% / 0.7);
+    --gradient-primary: linear-gradient(135deg, hsl(280 95% 65%), hsl(290 100% 72%));
+    --gradient-card: linear-gradient(135deg, hsl(248 50% 11%) 0%, hsl(252 45% 13%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(245 60% 6%) 0%, hsl(252 55% 9%) 50%, hsl(260 50% 11%) 100%);
+    --gradient-orange: linear-gradient(180deg, hsl(28 100% 62%), hsl(20 100% 52%));
+    --shadow-glow: 0 0 30px hsl(280 95% 65% / 0.5), 0 0 60px hsl(280 95% 65% / 0.25);
+    --shadow-card: 0 4px 24px -8px hsl(245 90% 2% / 0.8);
+    --shadow-neon-cyan: 0 0 12px hsl(175 100% 50%), 0 0 28px hsl(175 100% 50% / 0.5);
+    --shadow-neon-magenta: 0 0 12px hsl(310 100% 60%), 0 0 28px hsl(310 100% 60% / 0.5);
   }
 
   .light {
