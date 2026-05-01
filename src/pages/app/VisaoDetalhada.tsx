@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { fmtNum } from "@/lib/utils";
+import { fmtNum, cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   BarChart3, Clock, Search, FileText, Calendar, User, Inbox, PlayCircle, CheckCircle2, ArrowLeft, Loader2,
+  Copy, Activity, Box, AlertTriangle, Trophy, Printer, Plus, Download, TrendingUp, TrendingDown, FileSearch,
 } from "lucide-react";
+import { Sparklines, SparklinesLine } from "react-sparklines";
 
 const fmtDateTime = (s?: string | null) => {
   if (!s) return "—";
