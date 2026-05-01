@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { fmtNum, cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   BarChart3, Clock, Search, FileText, Calendar, User, PlayCircle, ArrowLeft,
-  Copy, CheckCircle2, Mail, PackageCheck, ScanLine, Box, Sparkles,
+  Copy, CheckCircle2, Mail, Sparkles,
 } from "lucide-react";
 import forkliftImg from "@/assets/timeline-forklift.png";
 import scannerImg from "@/assets/timeline-scanner.png";
@@ -411,7 +410,7 @@ function TimelinePanel({
   );
 }
 
-function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
+function Panel({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <div
       className={cn("rounded-md border border-border/70 shadow-[0_0_18px_hsl(var(--primary)/0.12),inset_0_0_28px_hsl(var(--primary)/0.06)]", className)}
@@ -494,7 +493,7 @@ function TimelineAsset({
   return (
     <div className="relative flex flex-col items-center min-w-0">
       {pillLabel && pillValue && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 min-w-[96px] rounded-md border border-warning/60 px-3 py-1 text-center shadow-[0_0_13px_hsl(var(--warning)/0.62)]" style={{ background: "linear-gradient(180deg, hsl(var(--warning)), hsl(18 100% 44%))" }}>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 min-w-[96px] rounded-md border border-warning/60 px-3 py-1 text-center shadow-[0_0_13px_hsl(var(--warning)/0.62)]" style={{ background: "linear-gradient(180deg, hsl(var(--warning)), hsl(var(--warning) / 0.72))" }}>
           <p className="text-[8px] leading-tight text-foreground/80">{pillLabel}</p>
           <p className="text-[13px] font-black leading-tight text-foreground tabular-nums">{pillValue}</p>
         </div>
