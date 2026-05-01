@@ -320,7 +320,86 @@ export default function Recebimento() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* NOVA REMESSA — admin */}
+      {isAdmin && (
+        <Card className="p-6 border-border/50 shadow-card space-y-4">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold">Nova Remessa</h2>
+            <span className="text-xs text-muted-foreground">Preencha os dados antes de anexar a planilha</span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label>Processo <span className="text-destructive">*</span></Label>
+              <Input className="mt-2" value={novaProcesso} onChange={(e) => setNovaProcesso(e.target.value)} placeholder="Ex: HISENSE-2025-04" />
+            </div>
+            <div>
+              <Label>Número da Remessa <span className="text-destructive">*</span></Label>
+              <Input className="mt-2" value={novaNumero} onChange={(e) => setNovaNumero(e.target.value)} placeholder="Ex: 1971131351" />
+            </div>
+            <div>
+              <Label>Qtde do Processo</Label>
+              <Input className="mt-2" type="number" min={0} value={novaQtdProcesso} onChange={(e) => setNovaQtdProcesso(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <Label>Origem <span className="text-destructive">*</span></Label>
+              <Select value={novaOrigem} onValueChange={setNovaOrigem}>
+                <SelectTrigger className="mt-2"><SelectValue placeholder="Selecione a origem" /></SelectTrigger>
+                <SelectContent>
+                  {ORIGENS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {novaOrigem === "OUTROS" && (
+              <div>
+                <Label>Origem (Outros) <span className="text-destructive">*</span></Label>
+                <Input className="mt-2" value={novaOrigemOutros} onChange={(e) => setNovaOrigemOutros(e.target.value)} placeholder="Informe a origem" />
+              </div>
+            )}
+            <div>
+              <Label>Divergência</Label>
+              <RadioGroup value={novaDivergencia} onValueChange={(v: any) => setNovaDivergencia(v)} className="flex gap-4 mt-3">
+                <div className="flex items-center gap-2"><RadioGroupItem value="nao" id="div-nao" /><Label htmlFor="div-nao" className="cursor-pointer">Não</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="sim" id="div-sim" /><Label htmlFor="div-sim" className="cursor-pointer">Sim</Label></div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          {novaDivergencia === "sim" && (
+            <div>
+              <Label>Comentários da divergência <span className="text-destructive">*</span></Label>
+              <Textarea className="mt-2" rows={3} value={novaDivergenciaComentario} onChange={(e) => setNovaDivergenciaComentario(e.target.value)} placeholder="Descreva a divergência..." />
+            </div>
+          )}
+
+          <div>
+            <Label>Arquivo XLSX <span className="text-destructive">*</span></Label>
+            <div className="mt-2 border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors">
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setNovaFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+                id="nova-file-input"
+              />
+              <label htmlFor="nova-file-input" className="cursor-pointer block">
+                <FileSpreadsheet className="h-8 w-8 mx-auto text-muted-foreground" />
+                <p className="mt-2 text-sm font-medium">{novaFile ? novaFile.name : "Clique para selecionar planilha"}</p>
+                <p className="text-xs text-muted-foreground mt-1">Colunas: CÓDIGO, DESCRIÇÃO, QTDE</p>
+              </label>
+            </div>
+          </div>
+
+          <Button onClick={handleCriarRemessa} disabled={novaLoading} className="gradient-primary text-primary-foreground shadow-glow">
+            {novaLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            Criar Remessa
+          </Button>
+        </Card>
+      )}
+
+
       <div className="flex flex-wrap gap-3">
         <Select value={processo} onValueChange={setProcesso}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="Processo" /></SelectTrigger>
