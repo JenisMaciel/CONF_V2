@@ -59,7 +59,7 @@ export default function ProcessosConferidos() {
   const [bipagens, setBipagens] = useState<Bipagem[]>([]);
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
-  const [produtoSearch, setProdutoSearch] = useState("");
+  const [produtoSearchByRemessa, setProdutoSearchByRemessa] = useState<Record<string, string>>({});
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [processoFilter, setProcessoFilter] = useState("TODOS");
@@ -137,39 +137,26 @@ export default function ProcessosConferidos() {
         const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
         return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q));
       }
-      if (produtoSearch.trim()) {
-        const q = produtoSearch.toLowerCase();
-        const itensDaRemessa = itens.filter((i) => i.remessa_id === r.id);
-        const matchItem = itensDaRemessa.some(
-          (i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)
-        );
-        if (matchItem) return true;
-        const codigosMatch = new Set(itensDaRemessa.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)).map((i) => i.codigo.toLowerCase()));
-        const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
-        return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q) || codigosMatch.has(b.codigo.toLowerCase()));
-      }
       return true;
     });
-  }, [remessas, itens, bipagens, processoFilter, dateFrom, dateTo, search, produtoSearch]);
+  }, [remessas, itens, bipagens, processoFilter, dateFrom, dateTo, search]);
 
   const totalItens = filteredRemessas.reduce((s, r) => s + (r.total_itens || 0), 0);
   const totalQtd = filteredRemessas.reduce((s, r) => s + Number(r.total_qtd_esperada || 0), 0);
 
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
-  // mapa código→descrição por remessa para casar bipagens com descrição do produto
   const itensFiltrados = (remessaId: string) => {
     const lista = itens.filter((i) => i.remessa_id === remessaId);
-    const q = (produtoSearch || search).toLowerCase().trim();
+    const q = (produtoSearchByRemessa[remessaId] || search).toLowerCase().trim();
     if (!q) return lista;
     return lista.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
   };
 
   const bipagensFiltradas = (remessaId: string) => {
     const lista = bipagens.filter((b) => b.remessa_id === remessaId);
-    const q = (produtoSearch || search).toLowerCase().trim();
+    const q = (produtoSearchByRemessa[remessaId] || search).toLowerCase().trim();
     if (!q) return lista;
-    // casar por código diretamente OU por descrição do item correspondente
     const itensDaRemessa = itens.filter((i) => i.remessa_id === remessaId);
     const codigosCasados = new Set(
       itensDaRemessa
@@ -312,18 +299,9 @@ export default function ProcessosConferidos() {
             <span className="text-muted-foreground text-sm">até</span>
             <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" />
           </div>
-          <Button variant="outline" onClick={() => { setSearch(""); setProdutoSearch(""); setDateFrom(""); setDateTo(""); setProcessoFilter("TODOS"); }}>
+          <Button variant="outline" onClick={() => { setSearch(""); setProdutoSearchByRemessa({}); setDateFrom(""); setDateTo(""); setProcessoFilter("TODOS"); }}>
             Limpar
           </Button>
-        </div>
-        <div className="relative">
-          <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-          <Input
-            placeholder="🔎 Pesquisar produto / descrição (filtra itens da remessa e do histórico de conferência)..."
-            value={produtoSearch}
-            onChange={(e) => setProdutoSearch(e.target.value)}
-            className="pl-9 border-primary/40 focus-visible:ring-primary"
-          />
         </div>
       </Card>
 
@@ -402,12 +380,21 @@ export default function ProcessosConferidos() {
                   <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => abrirEnvioEmail(r)}>
                     <Mail className="h-4 w-4 mr-1" /> Enviar por e-mail
                   </Button>
+                  <div className="relative flex-1 min-w-[220px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+                    <Input
+                      placeholder="🔎 Pesquisar produto / descrição nesta remessa..."
+                      value={produtoSearchByRemessa[r.id] || ""}
+                      onChange={(e) => setProdutoSearchByRemessa((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                      className="pl-9 h-9 border-primary/40 focus-visible:ring-primary"
+                    />
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto border-t border-border/50">
                   <div className="px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 flex items-center gap-2">
                     <Package className="h-3.5 w-3.5" /> Itens da remessa
-                    {(search.trim() || produtoSearch.trim()) && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
+                    {(search.trim() || (produtoSearchByRemessa[r.id] || "").trim()) && itensFiltrados(r.id).length !== itens.filter((i) => i.remessa_id === r.id).length && (
                       <Badge variant="outline" className="ml-1">filtrado</Badge>
                     )}
                   </div>
