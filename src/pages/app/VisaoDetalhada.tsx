@@ -222,6 +222,20 @@ export default function VisaoDetalhada() {
 function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
   const concluido = row.status === "finalizada";
   const conferenciaIniciada = !!row.conferencia_inicio;
+  const emConferencia = row.status === "em_conferencia" && conferenciaIniciada && !concluido;
+
+  // Ticker em tempo real: atualiza a cada 1s enquanto estiver em conferência
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!emConferencia) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [emConferencia]);
+
+  const tempoAndamentoMs = emConferencia && row.conferencia_inicio
+    ? now - new Date(row.conferencia_inicio).getTime()
+    : 0;
+
   const taxaSucesso = row.total_qtd_esperada > 0
     ? Math.max(0, Math.min(100, ((row.conferido - row.divergencias) / row.total_qtd_esperada) * 100))
     : 0;
