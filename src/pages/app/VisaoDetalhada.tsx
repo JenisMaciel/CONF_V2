@@ -641,38 +641,61 @@ function MetricBox({
   total?: number;
   value?: string;
   icon: React.ReactNode;
-  color: "primary" | "success" | "warning" | "destructive";
+  color: "primary" | "success" | "warning" | "destructive" | "purple";
 }) {
-  const colorClass = {
-    primary: "text-primary",
-    success: "text-success",
-    warning: "text-warning",
-    destructive: "text-destructive",
-  }[color];
-  const borderClass = {
-    primary: "border-b-primary",
-    success: "border-b-success",
-    warning: "border-b-warning",
-    destructive: "border-b-destructive",
-  }[color];
+  const palette: Record<string, { text: string; bar: string; glow: string; iconBg: string }> = {
+    primary: {
+      text: "text-primary",
+      bar: "bg-primary",
+      glow: "shadow-[0_0_20px_hsl(var(--primary)/0.5)]",
+      iconBg: "bg-primary/10 text-primary",
+    },
+    success: {
+      text: "text-success",
+      bar: "bg-success",
+      glow: "shadow-[0_0_20px_hsl(var(--success)/0.5)]",
+      iconBg: "bg-success/10 text-success",
+    },
+    warning: {
+      text: "text-warning",
+      bar: "bg-warning",
+      glow: "shadow-[0_0_20px_hsl(var(--warning)/0.5)]",
+      iconBg: "bg-warning/10 text-warning",
+    },
+    destructive: {
+      text: "text-destructive",
+      bar: "bg-destructive",
+      glow: "shadow-[0_0_20px_hsl(var(--destructive)/0.5)]",
+      iconBg: "bg-destructive/10 text-destructive",
+    },
+    purple: {
+      text: "text-[hsl(270_95%_70%)]",
+      bar: "bg-[hsl(270_95%_65%)]",
+      glow: "shadow-[0_0_20px_hsl(270_95%_65%/0.5)]",
+      iconBg: "bg-[hsl(270_95%_65%/0.12)] text-[hsl(270_95%_75%)]",
+    },
+  };
+  const p = palette[color];
   const complete = total !== undefined && current !== undefined && current >= total && total > 0;
 
   return (
-    <div className={cn("rounded-lg border bg-card/40 p-3 border-b-2", borderClass, "border-border/50")}>
+    <div className="relative overflow-hidden rounded-lg border border-border/50 bg-card/40 p-3 pb-4">
       <div className="flex items-start justify-between mb-2">
         <p className="text-[11px] text-muted-foreground leading-tight">{label}</p>
-        <span className={colorClass}>{icon}</span>
+        <span className={cn("inline-flex h-7 w-7 items-center justify-center rounded-md", p.iconBg)}>{icon}</span>
       </div>
       {value !== undefined ? (
-        <p className={cn("text-2xl font-bold tabular-nums", colorClass)}>{value}</p>
+        <p className={cn("text-2xl font-bold tabular-nums", p.text)}>{value}</p>
       ) : total !== undefined ? (
-        <p className="text-2xl font-bold tabular-nums">
+        <p className="text-2xl font-bold tabular-nums flex items-center gap-1.5">
           <span className={complete ? "text-success" : "text-warning"}>{fmtNum(current ?? 0)}</span>
           <span className="text-muted-foreground text-base">/{fmtNum(total)}</span>
+          {complete && <CheckCircle2 className="h-4 w-4 text-success" />}
         </p>
       ) : (
-        <p className={cn("text-2xl font-bold tabular-nums", colorClass)}>{fmtNum(current ?? 0)}</p>
+        <p className={cn("text-2xl font-bold tabular-nums", p.text)}>{fmtNum(current ?? 0)}</p>
       )}
+      <div className={cn("absolute left-0 right-0 bottom-0 h-[3px]", p.bar, p.glow)} />
     </div>
   );
 }
