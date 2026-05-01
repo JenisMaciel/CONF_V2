@@ -59,7 +59,7 @@ export default function ProcessosConferidos() {
   const [bipagens, setBipagens] = useState<Bipagem[]>([]);
   const [usuarios, setUsuarios] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
-  const [produtoSearch, setProdutoSearch] = useState("");
+  const [produtoSearchByRemessa, setProdutoSearchByRemessa] = useState<Record<string, string>>({});
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [processoFilter, setProcessoFilter] = useState("TODOS");
@@ -137,39 +137,26 @@ export default function ProcessosConferidos() {
         const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
         return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q));
       }
-      if (produtoSearch.trim()) {
-        const q = produtoSearch.toLowerCase();
-        const itensDaRemessa = itens.filter((i) => i.remessa_id === r.id);
-        const matchItem = itensDaRemessa.some(
-          (i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)
-        );
-        if (matchItem) return true;
-        const codigosMatch = new Set(itensDaRemessa.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q)).map((i) => i.codigo.toLowerCase()));
-        const bipsDaRemessa = bipagens.filter((b) => b.remessa_id === r.id);
-        return bipsDaRemessa.some((b) => b.codigo.toLowerCase().includes(q) || codigosMatch.has(b.codigo.toLowerCase()));
-      }
       return true;
     });
-  }, [remessas, itens, bipagens, processoFilter, dateFrom, dateTo, search, produtoSearch]);
+  }, [remessas, itens, bipagens, processoFilter, dateFrom, dateTo, search]);
 
   const totalItens = filteredRemessas.reduce((s, r) => s + (r.total_itens || 0), 0);
   const totalQtd = filteredRemessas.reduce((s, r) => s + Number(r.total_qtd_esperada || 0), 0);
 
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito.</p>;
 
-  // mapa código→descrição por remessa para casar bipagens com descrição do produto
   const itensFiltrados = (remessaId: string) => {
     const lista = itens.filter((i) => i.remessa_id === remessaId);
-    const q = (produtoSearch || search).toLowerCase().trim();
+    const q = (produtoSearchByRemessa[remessaId] || search).toLowerCase().trim();
     if (!q) return lista;
     return lista.filter((i) => i.codigo.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q));
   };
 
   const bipagensFiltradas = (remessaId: string) => {
     const lista = bipagens.filter((b) => b.remessa_id === remessaId);
-    const q = (produtoSearch || search).toLowerCase().trim();
+    const q = (produtoSearchByRemessa[remessaId] || search).toLowerCase().trim();
     if (!q) return lista;
-    // casar por código diretamente OU por descrição do item correspondente
     const itensDaRemessa = itens.filter((i) => i.remessa_id === remessaId);
     const codigosCasados = new Set(
       itensDaRemessa
