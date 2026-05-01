@@ -141,9 +141,16 @@ export default function Conferencia() {
         if (!row || row.remessa_id !== selectedRef.current) return;
         if (payload.eventType === "INSERT") {
           setBipagens((prev) => prev.some((b) => b.id === row.id) ? prev : [row, ...prev]);
+        } else if (payload.eventType === "UPDATE") {
+          setBipagens((prev) => prev.map((b) => (b.id === row.id ? { ...b, ...row } : b)));
         } else if (payload.eventType === "DELETE") {
           setBipagens((prev) => prev.filter((b) => b.id !== row.id));
         }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "materiais_amostras" }, (payload) => {
+        const row: any = payload.new ?? payload.old;
+        if (!row || row.remessa_id !== selectedRef.current) return;
+        loadMateriais(selectedRef.current);
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
