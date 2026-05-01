@@ -185,7 +185,7 @@ export default function Recebimento() {
             <Label>Arquivo XLSX <span className="text-destructive">*</span></Label>
             <div className="mt-2 border-2 border-dashed border-border rounded-lg p-5 text-center hover:border-primary/50 transition-colors">
               <input ref={fileRef} type="file" accept=".xlsx,.xls"
-                onChange={(e) => setNovaFile(e.target.files?.[0] ?? null)}
+                onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
                 className="hidden" id="nova-file-input" />
               <label htmlFor="nova-file-input" className="cursor-pointer block">
                 <FileSpreadsheet className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -193,11 +193,46 @@ export default function Recebimento() {
                 <p className="text-xs text-muted-foreground mt-1">Colunas: CÓDIGO, DESCRIÇÃO, QTDE</p>
               </label>
             </div>
+            {previewError && <p className="text-xs text-destructive mt-2">{previewError}</p>}
           </div>
 
-          <Button onClick={handleCriarRemessa} disabled={novaLoading} className="gradient-primary text-primary-foreground shadow-glow">
+          {previewItens.length > 0 && (
+            <div className="rounded-lg border border-border/60 overflow-hidden">
+              <div className="p-3 bg-muted/40 border-b border-border flex flex-wrap items-center gap-3 justify-between">
+                <h3 className="font-semibold text-sm">Prévia da planilha</h3>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="secondary">Total de itens: {previewItens.length}</Badge>
+                  <Badge variant="secondary">Soma de quantidades: {previewTotalQtd}</Badge>
+                </div>
+              </div>
+              <div className="max-h-72 overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 text-xs">#</TableHead>
+                      <TableHead className="text-xs">Código</TableHead>
+                      <TableHead className="text-xs">Descrição</TableHead>
+                      <TableHead className="text-right text-xs">Qtde</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {previewItens.map((i, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                        <TableCell className="font-mono text-xs">{i.codigo}</TableCell>
+                        <TableCell className="text-xs">{i.descricao}</TableCell>
+                        <TableCell className="text-right tabular-nums text-xs">{i.qtd}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          <Button onClick={handleCriarRemessa} disabled={novaLoading || previewItens.length === 0} className="gradient-primary text-primary-foreground shadow-glow">
             {novaLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-            Criar Remessa
+            Confirmar e Criar Remessa
           </Button>
         </Card>
       )}
