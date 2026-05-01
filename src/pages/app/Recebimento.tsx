@@ -84,17 +84,7 @@ export default function Recebimento() {
 
     setNovaLoading(true);
     try {
-      const buf = await novaFile.arrayBuffer();
-      const wb = XLSX.read(buf);
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
-      const itensImp = rows.map((r) => {
-        const codigo = String(r["CÓDIGO"] ?? r["CODIGO"] ?? r["Código"] ?? r["codigo"] ?? "").trim();
-        const descricao = String(r["DESCRIÇÃO"] ?? r["DESCRICAO"] ?? r["Descrição"] ?? r["descricao"] ?? "").trim();
-        const qtd = Number(r["QTDE"] ?? r["QTD"] ?? r["Qtde"] ?? r["qtd"] ?? 0);
-        return { codigo, descricao, qtd };
-      }).filter((i) => i.codigo);
-
+      const itensImp = previewItens;
       if (!itensImp.length) { toast.error("Planilha sem itens (cabeçalho: CÓDIGO, DESCRIÇÃO, QTDE)"); setNovaLoading(false); return; }
 
       const totalQtd = itensImp.reduce((s, i) => s + Number(i.qtd), 0);
@@ -121,7 +111,7 @@ export default function Recebimento() {
       toast.success(`Remessa criada com ${itensImp.length} itens — enviada ao Workflow`);
       setNovaProcesso(""); setNovaNumero(""); setNovaQtdProcesso(""); setNovaOrigem("");
       setNovaOrigemOutros(""); setNovaDivergencia("nao"); setNovaDivergenciaComentario("");
-      setNovaFile(null);
+      setNovaFile(null); setPreviewItens([]); setPreviewError("");
       if (fileRef.current) fileRef.current.value = "";
       await load();
     } catch (err: any) {
@@ -130,6 +120,8 @@ export default function Recebimento() {
       setNovaLoading(false);
     }
   };
+
+  const previewTotalQtd = previewItens.reduce((s, i) => s + Number(i.qtd || 0), 0);
 
   return (
     <div className="space-y-6 animate-fade-in">
