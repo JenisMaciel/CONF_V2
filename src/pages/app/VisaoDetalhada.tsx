@@ -518,16 +518,18 @@ function TimelineNode({
   const ring = tone === "success" ? "bg-success/15 text-success border-success/40" : "bg-primary/15 text-primary border-primary/40";
   const valueColor = tone === "success" ? "text-success" : "text-primary";
   return (
-    <div className="flex flex-col items-center text-center w-[160px] shrink-0">
+    <div className="flex flex-col items-center text-center w-16 shrink-0 relative">
       <div className={`h-16 w-16 rounded-full border-2 flex items-center justify-center ${ring} ${done ? "" : "opacity-50"} ${pulsing ? "animate-pulse shadow-glow" : ""}`}>
         {icon}
       </div>
-      <p className={`mt-3 text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
-      <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
-      <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
-      <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
-        {customStatus ?? (done ? "Concluído" : "Pendente")}
-      </Badge>
+      <div className="absolute top-[68px] left-1/2 -translate-x-1/2 w-[180px] flex flex-col items-center">
+        <p className={`text-sm font-bold tracking-wide ${done ? valueColor : "text-muted-foreground"}`}>{title}</p>
+        <p className="text-xs text-muted-foreground mt-1 tabular-nums">{date}</p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">{description}</p>
+        <Badge variant="outline" className={`mt-2 ${pulsing ? "bg-primary/15 text-primary border-primary/30 animate-pulse" : done ? statusBadgeClass("finalizada") : "text-muted-foreground"}`}>
+          {customStatus ?? (done ? "Concluído" : "Pendente")}
+        </Badge>
+      </div>
     </div>
   );
 }
