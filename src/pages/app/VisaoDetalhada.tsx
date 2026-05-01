@@ -408,7 +408,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
                 <div key={i} className="flex items-start flex-1 last:flex-none">
                   <TimelineNode {...n} />
                   {i < nodes.length - 1 && (
-                    <div className="flex-1 flex flex-col items-center min-w-0 px-2 relative" style={{ height: 64 }}>
+                    <div className="flex-1 flex flex-col items-center min-w-0 relative" style={{ height: 64 }}>
                       <p className="text-xs text-muted-foreground">{segments[i].label}</p>
                       <p className={`text-sm font-semibold tabular-nums ${segments[i].color === "success" ? "text-success" : "text-primary"}`}>
                         {segments[i].value}
