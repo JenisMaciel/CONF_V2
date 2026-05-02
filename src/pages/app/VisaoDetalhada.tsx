@@ -428,14 +428,14 @@ function TimelinePanel({
           <div className="absolute inset-x-0 top-1/2 h-[5px] -translate-y-1/2 bg-[linear-gradient(90deg,transparent,hsl(var(--warning)/0.36),transparent)] blur-[2px]" />
         </div>
 
-        <img src={timelineForklift} alt="" loading="lazy" width={1024} height={1024}
-          className="pointer-events-none absolute left-[7.7%] top-[66px] z-20 h-[134px] w-[188px] select-none object-contain drop-shadow-[0_12px_20px_hsl(var(--warning)/0.35)]" />
-        <img src={timelineScanner} alt="" loading="lazy" width={1024} height={1024}
-          className="pointer-events-none absolute left-[36.7%] top-[80px] z-20 h-[124px] w-[178px] select-none object-contain drop-shadow-[0_12px_22px_hsl(var(--primary)/0.34)]" />
-        <img src={timelineGridBoxes} alt="" loading="lazy" width={1024} height={1024}
-          className="pointer-events-none absolute left-[53.1%] top-[54px] z-10 h-[151px] w-[180px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
-        <img src={timelineShelf} alt="" loading="lazy" width={1024} height={1024}
-          className="pointer-events-none absolute right-[7.1%] top-[-2px] z-20 h-[235px] w-[208px] select-none object-contain drop-shadow-[0_16px_26px_hsl(var(--primary-glow)/0.48)]" />
+        <img src={timelineForklift} alt="" loading="lazy" width={645} height={561}
+          className="pointer-events-none absolute left-[7.8%] top-[70px] z-20 h-[96px] w-[132px] select-none object-contain drop-shadow-[0_12px_20px_hsl(var(--warning)/0.35)]" />
+        <img src={timelineScanner} alt="" loading="lazy" width={767} height={690}
+          className="pointer-events-none absolute left-[37.5%] top-[84px] z-20 h-[115px] w-[128px] select-none object-contain drop-shadow-[0_12px_22px_hsl(var(--primary)/0.34)]" />
+        <img src={timelineGridBoxes} alt="" loading="lazy" width={441} height={384}
+          className="pointer-events-none absolute left-[55.2%] top-[92px] z-10 h-[70px] w-[82px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
+        <img src={timelineShelf} alt="" loading="lazy" width={550} height={895}
+          className="pointer-events-none absolute right-[8.1%] top-[29px] z-20 h-[166px] w-[103px] select-none object-contain drop-shadow-[0_16px_26px_hsl(var(--primary-glow)/0.48)]" />
         <div className="absolute right-[9.6%] top-[153px] z-30 flex h-[66px] w-[66px] items-center justify-center rounded-full border-[5px] border-success/65 bg-success text-success-foreground shadow-[0_0_0_4px_hsl(var(--background)/0.68),0_0_20px_hsl(var(--success)/0.58),inset_0_0_14px_hsl(var(--foreground)/0.25)]">
           <Check className="h-[42px] w-[42px] stroke-[4]" />
         </div>
@@ -505,7 +505,7 @@ function VolumeBadge({ className, label, value }: { className: string; label: st
   return (
     <div className={cn("absolute z-40 h-[58px] w-[175px] rounded-[7px] border border-warning/28 bg-background/74 px-[10px] py-[8px] text-left backdrop-blur-md shadow-[0_0_14px_hsl(var(--warning)/0.15),inset_0_0_16px_hsl(var(--primary)/0.05)]", className)}>
       <span className="absolute left-1/2 bottom-full h-0 w-0 -translate-x-1/2 border-x-[6px] border-b-[7px] border-x-transparent border-b-warning/22" />
-      <p className="truncate pr-[30px] text-[12px] font-black leading-none text-foreground">{label}</p>
+      <p className="truncate pr-[30px] text-[11px] font-black leading-none text-foreground">{label}</p>
       <p className="mt-[7px] truncate pr-[30px] text-[14px] font-medium leading-none text-warning/90">{value}</p>
       <span className="absolute right-[12px] top-[20px] h-[20px] w-[20px] rounded-[3px] border border-muted-foreground/35 bg-[repeating-linear-gradient(90deg,hsl(var(--foreground)/0.72)_0_1px,transparent_1px_3px),repeating-linear-gradient(0deg,hsl(var(--foreground)/0.72)_0_1px,transparent_1px_3px)] opacity-80 shadow-[0_0_8px_hsl(var(--foreground)/0.18)]" />
     </div>
