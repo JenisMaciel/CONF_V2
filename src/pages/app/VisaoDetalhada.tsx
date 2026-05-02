@@ -262,7 +262,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
   return (
     <main className="min-h-screen w-full overflow-hidden bg-background text-foreground animate-fade-in">
-      <div className="grid h-[100dvh] min-h-[720px] max-h-[920px] min-w-0 grid-rows-[183px_214px_minmax(0,1fr)_90px] gap-[10px] p-[8px_8px_10px]">
+      <div className="grid h-[100dvh] min-h-[720px] max-h-[920px] min-w-0 grid-rows-[183px_306px_minmax(0,1fr)_90px] gap-[10px] p-[8px_8px_10px]">
         <HeroPanel row={row} totalLabel={totalLabel} taxaSucesso={taxaSucesso} copyNumero={copyNumero} />
 
         <TimelinePanel
@@ -413,47 +413,44 @@ function TimelinePanel({
   concluido: boolean;
 }) {
   return (
-    <Panel className="relative overflow-hidden px-[22px] pt-[14px] pb-[10px]">
-      {/* Ambient glows */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_60%,hsl(var(--warning)/0.10),transparent_40%),radial-gradient(ellipse_at_50%_50%,hsl(var(--primary)/0.08),transparent_55%),radial-gradient(ellipse_at_85%_60%,hsl(var(--success)/0.10),transparent_42%)]" />
+    <Panel className="relative overflow-hidden px-[18px] pt-[22px] pb-[10px]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_48%,hsl(var(--warning)/0.14),transparent_34%),radial-gradient(ellipse_at_50%_36%,hsl(var(--primary)/0.12),transparent_44%),radial-gradient(ellipse_at_86%_58%,hsl(var(--primary-glow)/0.16),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-y-0 left-[21%] right-[26%] opacity-35 [background-image:linear-gradient(115deg,hsl(var(--primary)/0.22)_1px,transparent_1px),linear-gradient(25deg,hsl(var(--primary)/0.18)_1px,transparent_1px)] [background-size:92px_46px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--background)/0.92)_0%,transparent_14%,transparent_84%,hsl(var(--background)/0.92)_100%)]" />
 
-      <div className="relative z-10 flex items-center gap-[10px]">
-        <BarChart3 className="h-[16px] w-[16px] text-success drop-shadow-[0_0_8px_hsl(var(--success)/0.75)]" />
-        <h2 className="text-[15px] font-black leading-none">Linha do Tempo do Processo</h2>
+      <div className="relative z-10">
+        <h2 className="text-[20px] font-black leading-none text-foreground">Linha do Tempo do Processo</h2>
       </div>
 
-      {/* Stage area */}
-      <div className="relative mt-[6px] h-[170px] w-full">
-        {/* Central neon path */}
-        <div className="absolute left-[6%] right-[6%] top-[78px] h-[2px]">
-          <div className="absolute inset-0 rounded-full bg-[linear-gradient(90deg,hsl(var(--success)),hsl(var(--success)/0.85),hsl(var(--primary)/0.9),hsl(var(--success)))] shadow-[0_0_14px_hsl(var(--success)/0.7),0_0_28px_hsl(var(--primary)/0.35)]" />
-          {/* dotted segments */}
-          <div className="absolute left-[22%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--success))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
-          <div className="absolute left-[68%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--primary))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
+      <div className="relative mt-[8px] h-[252px] w-full min-w-0">
+        <div className="absolute left-[1.9%] right-[2.2%] top-[83px] h-[3px]">
+          <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-warning/70 shadow-[0_0_8px_hsl(var(--warning)/0.78),0_0_18px_hsl(var(--warning)/0.26)]" />
+          <div className="absolute inset-x-0 top-1/2 h-[5px] -translate-y-1/2 bg-[linear-gradient(90deg,transparent,hsl(var(--warning)/0.36),transparent)] blur-[2px]" />
         </div>
 
-        {/* Isometric images */}
-        <img src={timelineForklift} alt="" loading="lazy" width={512} height={512}
-          className="absolute left-[15%] top-[6px] h-[150px] w-[150px] object-contain drop-shadow-[0_8px_18px_hsl(var(--warning)/0.45)] pointer-events-none select-none z-10" />
-        <img src={timelineScanner} alt="" loading="lazy" width={512} height={512}
-          className="absolute left-[42%] top-[10px] h-[140px] w-[140px] object-contain drop-shadow-[0_8px_18px_hsl(var(--primary)/0.45)] pointer-events-none select-none z-10" />
-        <img src={timelineShelf} alt="" loading="lazy" width={512} height={512}
-          className="absolute right-[15%] top-[14px] h-[140px] w-[140px] object-contain drop-shadow-[0_8px_18px_hsl(var(--success)/0.45)] pointer-events-none select-none z-10" />
+        <img src={timelineForklift} alt="" loading="lazy" width={645} height={561}
+          className="pointer-events-none absolute left-[10.1%] top-[75px] z-20 h-[96px] w-[132px] select-none object-contain drop-shadow-[0_12px_20px_hsl(var(--warning)/0.35)]" />
+        <img src={timelineScanner} alt="" loading="lazy" width={767} height={690}
+          className="pointer-events-none absolute left-[38.6%] top-[84px] z-20 h-[115px] w-[128px] select-none object-contain drop-shadow-[0_12px_22px_hsl(var(--primary)/0.34)]" />
+        <img src={timelineGridBoxes} alt="" loading="lazy" width={441} height={384}
+          className="pointer-events-none absolute left-[55.8%] top-[92px] z-10 h-[70px] w-[82px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
+        <img src={timelineShelf} alt="" loading="lazy" width={550} height={895}
+          className="pointer-events-none absolute right-[8.1%] top-[29px] z-20 h-[166px] w-[103px] select-none object-contain drop-shadow-[0_16px_26px_hsl(var(--primary-glow)/0.48)]" />
+        <div className="absolute right-[9.6%] top-[153px] z-30 flex h-[66px] w-[66px] items-center justify-center rounded-full border-[5px] border-success/65 bg-success text-success-foreground shadow-[0_0_0_4px_hsl(var(--background)/0.68),0_0_20px_hsl(var(--success)/0.58),inset_0_0_14px_hsl(var(--foreground)/0.25)]">
+          <Check className="h-[42px] w-[42px] stroke-[4]" />
+        </div>
 
-        {/* Orange duration pills (above the line) */}
-        <TimePill className="left-[30%] top-[40px]" label="Tempo até início" value={ateInicioLabel} />
-        <TimePill className="left-[68%] top-[40px]" label="Tempo de conferência" value={conferenciaLabel} />
+        <TimePill className="left-[27.1%] top-[48px]" label="Tempo até início" value={ateInicioLabel} />
+        <TimePill className="left-[72.7%] top-[48px]" label="Tempo de conferência" value={conferenciaLabel} />
 
-        {/* Dark info cards (below) */}
-        <VolumeBadge className="left-[14%] top-[122px]" value="Volume Total Recebido: 10 Pallets" />
-        <VolumeBadge className="left-1/2 top-[122px] -translate-x-1/2" value="Volume Total Recebido: 1 Pallets" />
-        <VolumeBadge className="right-[10%] top-[122px]" value="Volume Total Recebido: 12 Pallets" />
+        <VolumeBadge className="left-[21.9%] top-[126px]" label="Volume Total Recebido:" value="10 Pallets" />
+        <VolumeBadge className="left-[48.5%] top-[206px] -translate-x-1/2" label="Volume Total Recebido:" value="1 Pallets" />
+        <VolumeBadge className="left-[72.2%] top-[126px]" label="Volume Total Recebido:" value="12 Pallets" />
 
-        {/* Timeline nodes */}
         <TimelineNode
-          className="left-[3%] top-[40px]"
+          className="left-[0.2%] top-[54px]"
           title="RECEBIMENTO"
-          titleClass="text-success"
+          titleClass="text-warning"
           icon={<Mail className="h-[24px] w-[24px]" />}
           date={fmtDateTime(row.recebida_em)}
           description="Processo recebido no sistema"
@@ -462,9 +459,9 @@ function TimelinePanel({
           done
         />
         <TimelineNode
-          className="left-[55%] top-[40px]"
+          className="left-[48.3%] top-[54px] -translate-x-1/2"
           title="INÍCIO DA CONFERÊNCIA"
-          titleClass="text-primary"
+          titleClass="text-warning"
           icon={<PlayCircle className="h-[26px] w-[26px]" />}
           date={fmtDateTime(row.conferencia_inicio)}
           description="Conferência iniciada"
@@ -473,9 +470,9 @@ function TimelinePanel({
           done={conferenciaIniciada}
         />
         <TimelineNode
-          className="right-[2%] top-[40px]"
+          className="right-[-0.2%] top-[54px]"
           title="CONFERÊNCIA FINALIZADA"
-          titleClass="text-success"
+          titleClass="text-warning"
           icon={<CheckCircle2 className="h-[26px] w-[26px]" />}
           date={fmtDateTime(row.finalizada_em)}
           description={concluido ? "Conferência finalizada com sucesso" : "Aguardando finalização"}
@@ -491,25 +488,32 @@ function TimelinePanel({
 function TimePill({ className, label, value }: { className: string; label: string; value: string }) {
   return (
     <div
-      className={cn("absolute z-30 min-w-[120px] -translate-x-1/2 rounded-md border border-warning/70 px-[12px] py-[5px] text-center shadow-[0_0_18px_hsl(var(--warning)/0.55),inset_0_0_10px_hsl(var(--warning)/0.25)]", className)}
-      style={{ background: "linear-gradient(180deg, hsl(28 100% 62%), hsl(20 100% 50%))" }}
+      className={cn("absolute z-40 h-[60px] w-[150px] -translate-x-1/2 rounded-[7px] border border-warning/70 px-[12px] pt-[9px] text-center shadow-[0_0_16px_hsl(var(--warning)/0.52),inset_0_0_14px_hsl(var(--warning)/0.30)]", className)}
+      style={{ background: "var(--gradient-orange)" }}
     >
-      <p className="text-[9px] font-semibold leading-tight text-foreground/90">{label}</p>
-      <p className="text-[14px] font-black leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">{value}</p>
+      <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[7px] border-x-transparent border-t-warning/55" />
+      <p className="text-[10px] font-semibold leading-none text-foreground/85">{label}</p>
+      <p className="mt-[6px] text-[20px] font-semibold leading-none text-foreground drop-shadow-[0_1px_2px_hsl(var(--background)/0.65)]">{value}</p>
+      <svg className="absolute bottom-[8px] right-[10px] h-[14px] w-[44px] text-foreground/58" viewBox="0 0 44 14" fill="none" aria-hidden="true">
+        <path d="M1 11H7L10 8L13 10L17 4L21 7H28L32 3L36 5L39 2H43" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
     </div>
   );
 }
 
-function VolumeBadge({ className, value }: { className: string; value: string }) {
+function VolumeBadge({ className, label, value }: { className: string; label: string; value: string }) {
   return (
-    <div className={cn("absolute z-30 max-w-[210px] rounded-md border border-border/60 bg-background/80 px-[10px] py-[5px] text-center backdrop-blur-sm shadow-[0_0_12px_hsl(var(--primary)/0.18)]", className)}>
-      <p className="truncate text-[10px] font-semibold leading-tight text-foreground/90">{value}</p>
+    <div className={cn("absolute z-40 h-[58px] w-[175px] rounded-[7px] border border-warning/28 bg-background/74 px-[10px] py-[8px] text-left backdrop-blur-md shadow-[0_0_14px_hsl(var(--warning)/0.15),inset_0_0_16px_hsl(var(--primary)/0.05)]", className)}>
+      <span className="absolute left-1/2 bottom-full h-0 w-0 -translate-x-1/2 border-x-[6px] border-b-[7px] border-x-transparent border-b-warning/22" />
+      <p className="truncate pr-[30px] text-[11px] font-black leading-none text-foreground">{label}</p>
+      <p className="mt-[7px] truncate pr-[30px] text-[14px] font-medium leading-none text-warning/90">{value}</p>
+      <span className="absolute right-[12px] top-[20px] h-[20px] w-[20px] rounded-[3px] border border-muted-foreground/35 bg-[repeating-linear-gradient(90deg,hsl(var(--foreground)/0.72)_0_1px,transparent_1px_3px),repeating-linear-gradient(0deg,hsl(var(--foreground)/0.72)_0_1px,transparent_1px_3px)] opacity-80 shadow-[0_0_8px_hsl(var(--foreground)/0.18)]" />
     </div>
   );
 }
 
 function TimelineNode({
-  className, title, titleClass, icon, date, description, status, tone, done,
+  className, title, titleClass, icon, date, description, status, done,
 }: {
   className: string;
   title: string;
@@ -521,18 +525,17 @@ function TimelineNode({
   tone: "success" | "primary";
   done: boolean;
 }) {
-  const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className={cn("absolute z-20 flex w-[180px] flex-col items-center text-center", className)}>
-      <div className="relative mb-[8px] flex h-[58px] w-[58px] items-center justify-center rounded-full border-[3px]" style={{ color: `hsl(var(${toneVar}))`, borderColor: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.12)`, boxShadow: `0 0 22px hsl(var(${toneVar}) / 0.72), inset 0 0 18px hsl(var(${toneVar}) / 0.18)` }}>
-        <div className="absolute inset-[-8px] rounded-full border" style={{ borderColor: `hsl(var(${toneVar}) / 0.2)`, boxShadow: `0 0 16px hsl(var(${toneVar}) / 0.25)` }} />
+    <div className={cn("absolute z-30 flex w-[150px] flex-col items-center text-center", className)}>
+      <div className="relative mb-[15px] flex h-[60px] w-[60px] items-center justify-center rounded-full border-[2px]" style={{ color: `hsl(var(--warning))`, borderColor: `hsl(var(--warning) / 0.62)`, background: `hsl(var(--warning) / 0.17)`, boxShadow: `0 0 16px hsl(var(--warning) / 0.38), inset 0 0 14px hsl(var(--warning) / 0.14)` }}>
+        <div className="absolute inset-[-3px] rounded-full border" style={{ borderColor: `hsl(var(--warning) / 0.18)` }} />
         {icon}
         {done && <span className="absolute -bottom-[3px] -right-[2px] flex h-[16px] w-[16px] items-center justify-center rounded-full bg-success text-success-foreground shadow-[0_0_10px_hsl(var(--success))]"><Check className="h-[10px] w-[10px]" /></span>}
       </div>
-      <p className={cn("max-w-full truncate text-[12px] font-black leading-none", titleClass)}>{title}</p>
-      <p className="mt-[6px] max-w-full truncate text-[10px] leading-none text-muted-foreground">{date}</p>
-      <p className="mt-[4px] max-w-full truncate text-[10px] leading-none text-muted-foreground">{description}</p>
-      <span className="mt-[6px] rounded-full border border-success/30 bg-success/18 px-[12px] py-[3px] text-[10px] font-bold text-success shadow-[0_0_10px_hsl(var(--success)/0.2)]">{status}</span>
+      <p className={cn("max-w-full text-[16px] font-black uppercase leading-[1.02]", titleClass)}>{title}</p>
+      <p className="mt-[8px] max-w-full truncate text-[11px] leading-none text-muted-foreground">{date}</p>
+      <p className="mt-[7px] max-w-full text-[11px] leading-[1.25] text-muted-foreground">{description}</p>
+      <span className="mt-[9px] rounded-full border border-success/28 bg-success/16 px-[16px] py-[5px] text-[11px] font-bold text-success shadow-[0_0_10px_hsl(var(--success)/0.16)]">{status}</span>
     </div>
   );
 }
