@@ -262,7 +262,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
   return (
     <main className="min-h-screen w-full overflow-hidden bg-background text-foreground animate-fade-in">
-      <div className="grid h-[100dvh] min-h-[720px] max-h-[920px] min-w-0 grid-rows-[183px_306px_minmax(0,1fr)_90px] gap-[10px] p-[8px_8px_10px]">
+      <div className="grid h-[100dvh] min-h-[720px] max-h-[960px] min-w-0 grid-rows-[183px_306px_minmax(0,1fr)] gap-[10px] p-[8px_8px_10px]">
         <HeroPanel row={row} totalLabel={totalLabel} taxaSucesso={taxaSucesso} copyNumero={copyNumero} />
 
         <TimelinePanel
@@ -273,7 +273,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           concluido={concluido}
         />
 
-        <section className="grid min-h-0 min-w-0 grid-cols-[29%_43%_27%] gap-[12px]">
+        <section className="grid min-h-0 min-w-0 grid-cols-[29%_44%_minmax(0,1fr)] gap-[12px]">
           <TimeDetailsCard
             row={row}
             totalLabel={totalLabel}
@@ -281,21 +281,196 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
             conferenciaLabel={conferenciaLabel}
           />
 
-          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(206px,215px)_minmax(0,1fr)] gap-[10px]">
-            <ResumoProcessoCard row={row} taxaSucesso={taxaSucesso} />
-            <DesempenhoCard />
-          </div>
+          <CenterMetricsAndChart row={row} taxaSucesso={taxaSucesso} />
 
-          <ActivityPanel row={row} concluido={concluido} conferenciaIniciada={conferenciaIniciada} />
-        </section>
-
-        <section className="grid min-h-0 min-w-0 grid-cols-[35%_37%_1fr] gap-[10px]">
-          <QuickActions onBack={onBack} />
-          <ObservacoesPanel row={row} />
-          <div />
+          <ObservationsAndLogPanel row={row} concluido={concluido} conferenciaIniciada={conferenciaIniciada} onBack={onBack} />
         </section>
       </div>
     </main>
+  );
+}
+
+/* ============================ CENTRO INFERIOR (métricas + gráfico) ============================ */
+
+function CenterMetricsAndChart({ row, taxaSucesso }: { row: Row; taxaSucesso: number }) {
+  const taxa = Math.round(taxaSucesso || 100);
+  const skus = row.skus_conferidos || row.total_itens || 7;
+  const totalSkus = row.total_itens || 7;
+  return (
+    <Panel className="relative min-h-0 min-w-0 overflow-hidden p-[14px]">
+      <div className="grid h-full grid-rows-[auto_minmax(0,1fr)] gap-[10px]">
+        <div className="grid grid-cols-[110px_minmax(0,1fr)_minmax(0,1fr)_90px] items-center gap-[14px]">
+          <CircularPct value={taxa} />
+          <MiniMetric label="Quantidade conferida" value="" bars />
+          <MiniMetric label="SKUs conferidos" value={`${skus}/${totalSkus}`} bars2 />
+          <div className="min-w-0">
+            <p className="text-[12px] font-semibold text-muted-foreground leading-none">Divergência</p>
+            <p className="mt-[10px] text-[28px] font-black leading-none text-primary tabular-nums drop-shadow-[0_0_8px_hsl(var(--primary)/0.55)]">({row.divergencias || 0})</p>
+          </div>
+        </div>
+
+        <ComparativoChart numeroAtual={row.numero} />
+      </div>
+    </Panel>
+  );
+}
+
+function CircularPct({ value }: { value: number }) {
+  const c = 2 * Math.PI * 38;
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <div className="relative h-[100px] w-[100px]">
+      <div className="absolute inset-0 rounded-full bg-primary/15 blur-md" />
+      <svg viewBox="0 0 100 100" className="relative h-full w-full -rotate-90">
+        <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(var(--primary) / 0.18)" strokeWidth="9" />
+        <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(var(--primary))" strokeWidth="10" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (v / 100) * c} style={{ filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.9))" }} />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[20px] font-black text-primary tabular-nums">{v}%</span>
+    </div>
+  );
+}
+
+function MiniMetric({ label, value, bars, bars2 }: { label: string; value: string; bars?: boolean; bars2?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[12px] font-semibold text-muted-foreground leading-none truncate">{label}</p>
+      {value && <p className="mt-[6px] text-[18px] font-black leading-none tabular-nums text-foreground">{value}</p>}
+      {bars && (
+        <div className="mt-[8px] flex items-end gap-[5px] h-[42px]">
+          {[60, 80, 95, 70, 50].map((h, i) => {
+            const colors = ["hsl(var(--muted-foreground)/0.55)", "hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--accent))", "hsl(var(--primary))"];
+            return <div key={i} className="w-[10px] rounded-sm" style={{ height: `${h}%`, background: colors[i], boxShadow: `0 0 6px ${colors[i]}` }} />;
+          })}
+        </div>
+      )}
+      {bars2 && (
+        <div className="mt-[8px] flex items-end gap-[3px] h-[36px]">
+          {[20, 30, 25, 45, 40, 60, 55, 75, 70, 85, 80, 95].map((h, i) => (
+            <div key={i} className="w-[5px] rounded-sm" style={{ height: `${h}%`, background: i < 4 ? "hsl(var(--primary)/0.7)" : "hsl(var(--accent))", boxShadow: "0 0 5px hsl(var(--accent)/0.7)" }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComparativoChart({ numeroAtual }: { numeroAtual: string }) {
+  const w = 560;
+  const h = 200;
+  const padL = 40, padR = 16, padT = 22, padB = 30;
+  const innerW = w - padL - padR;
+  const innerH = h - padT - padB;
+  // Curvas (% eficiência ao longo do tempo)
+  const atual = [5, 60, 88, 96, 99, 100, 100, 100, 100, 100, 100, 100];
+  const anterior = [4, 35, 55, 50, 70, 80, 60, 50, 45, 60, 35, 5];
+  const xs = (i: number, len: number) => padL + (i / (len - 1)) * innerW;
+  const ys = (v: number) => padT + (1 - v / 100) * innerH;
+  const toPath = (arr: number[]) => {
+    const pts = arr.map((v, i) => ({ x: xs(i, arr.length), y: ys(v) }));
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const t = 0.22;
+      d += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
+    }
+    return d;
+  };
+  const yLabels = [0, 20, 40, 60, 80, 100];
+  const xLabels = ["0", "5min", "10min", "15min", "20min", "25min", "30min", "35min", "40min", "45min", "50min", "55min"];
+
+  return (
+    <div className="relative min-h-0 min-w-0 rounded-md border border-border/40 bg-background/30 p-[8px] overflow-hidden">
+      <div className="text-center text-[11px] font-bold tracking-wide">
+        <span className="text-muted-foreground">COMPARATIVO DE DESEMPENHO: </span>
+        <span className="text-primary-glow drop-shadow-[0_0_6px_hsl(var(--primary-glow))]">ATUAL</span>
+        <span className="text-muted-foreground"> vs. </span>
+        <span className="text-accent drop-shadow-[0_0_6px_hsl(var(--accent))]">ANTERIOR</span>
+        <span className="text-accent ml-1">PROCESSO ANTERIOR (#{Number(numeroAtual) - 1 || "15164946463"})</span>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-[calc(100%-22px)]">
+        <defs>
+          <pattern id="grid" width={innerW / 11} height={innerH / 5} patternUnits="userSpaceOnUse" x={padL} y={padT}>
+            <path d={`M ${innerW / 11} 0 L 0 0 0 ${innerH / 5}`} fill="none" stroke="hsl(var(--primary) / 0.12)" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect x={padL} y={padT} width={innerW} height={innerH} fill="url(#grid)" />
+        {/* Eixo Y */}
+        {yLabels.map((v) => (
+          <g key={v}>
+            <line x1={padL} y1={ys(v)} x2={w - padR} y2={ys(v)} stroke="hsl(var(--border) / 0.3)" strokeWidth="0.5" />
+            <text x={padL - 5} y={ys(v) + 3} fontSize="8" fill="hsl(var(--muted-foreground))" textAnchor="end">{v}%</text>
+          </g>
+        ))}
+        {/* Eixo X */}
+        {xLabels.map((label, i) => (
+          <text key={i} x={xs(i, xLabels.length)} y={h - padB + 12} fontSize="7" fill="hsl(var(--muted-foreground))" textAnchor="middle">{label}</text>
+        ))}
+        <text x={6} y={h / 2} fontSize="8" fill="hsl(var(--muted-foreground))" transform={`rotate(-90 6 ${h / 2})`} textAnchor="middle">Eficiência (%)</text>
+        <text x={w / 2} y={h - 4} fontSize="8" fill="hsl(var(--muted-foreground))" textAnchor="middle">Tempo de Execução (min)</text>
+
+        {/* Linha ANTERIOR (rosa) */}
+        <path d={toPath(anterior)} fill="none" stroke="hsl(var(--accent))" strokeWidth="2" style={{ filter: "drop-shadow(0 0 4px hsl(var(--accent) / 0.9))" }} />
+        {anterior.map((v, i) => (
+          <circle key={i} cx={xs(i, anterior.length)} cy={ys(v)} r="2" fill="hsl(var(--accent))" style={{ filter: "drop-shadow(0 0 3px hsl(var(--accent)))" }} />
+        ))}
+        {/* Linha ATUAL (cyan/azul neon) */}
+        <path d={toPath(atual)} fill="none" stroke="hsl(var(--primary-glow))" strokeWidth="2.2" style={{ filter: "drop-shadow(0 0 5px hsl(var(--primary-glow) / 0.95))" }} />
+        {atual.map((v, i) => (
+          <circle key={i} cx={xs(i, atual.length)} cy={ys(v)} r="2.2" fill="hsl(var(--primary-glow))" style={{ filter: "drop-shadow(0 0 4px hsl(var(--primary-glow)))" }} />
+        ))}
+
+        {/* Labels nas curvas */}
+        <text x={xs(6, atual.length)} y={ys(100) - 6} fontSize="9" fill="hsl(var(--primary-glow))" textAnchor="middle" fontWeight="bold">PROCESSO ATUAL</text>
+        <text x={xs(6, atual.length)} y={ys(100) + 4} fontSize="7" fill="hsl(var(--primary-glow))" textAnchor="middle">(#{numeroAtual})</text>
+        <text x={xs(7, anterior.length)} y={ys(50) + 14} fontSize="9" fill="hsl(var(--accent))" textAnchor="middle" fontWeight="bold">PROCESSO ANTERIOR</text>
+        <text x={xs(7, anterior.length)} y={ys(50) + 24} fontSize="7" fill="hsl(var(--accent))" textAnchor="middle">(#{Number(numeroAtual) - 1 || "15164946463"})</text>
+      </svg>
+    </div>
+  );
+}
+
+/* ============================ DIREITA INFERIOR (Observações + Log) ============================ */
+
+function ObservationsAndLogPanel({ row, concluido, conferenciaIniciada, onBack }: { row: Row; concluido: boolean; conferenciaIniciada: boolean; onBack: () => void }) {
+  const logs = [
+    { time: "01:06:13", title: "Scanning SKUR123", desc: "Scanning Ser SKUK123" },
+    { time: "01:06:23", title: "Batch Approval", desc: "Divergencz onhet complete complete" },
+    { time: "01:05:23", title: "Scanning SKU8123", desc: "Secnning B-UK125" },
+    { time: "01:05:23", title: "Batch Approval", desc: "Secnning B-UK125" },
+  ];
+  return (
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[14px] flex flex-col">
+      <SectionTitle icon={<FileText className="h-[16px] w-[16px] text-primary" />} title="Observações & Log Recente" />
+      <div className="mt-[10px] rounded-md border border-border/40 bg-background/30 p-[10px] text-[12px] text-muted-foreground min-h-[48px]">
+        {row.observacao || "Nenhuma observação registrada."}
+      </div>
+
+      <div className="mt-[12px] flex items-center gap-2">
+        <h4 className="text-[14px] font-black text-foreground">Log Recente:</h4>
+      </div>
+
+      <div className="mt-[8px] flex-1 min-h-0 overflow-auto pr-1 space-y-[8px]">
+        {logs.map((l, i) => (
+          <div key={i} className="grid grid-cols-[60px_minmax(0,1fr)] gap-[8px] items-start">
+            <span className="text-[10px] tabular-nums text-muted-foreground pt-[2px]">{l.time}</span>
+            <div className="min-w-0">
+              <p className="text-[12px] font-bold leading-tight text-primary-glow drop-shadow-[0_0_4px_hsl(var(--primary-glow)/0.7)] truncate">{l.title}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight truncate">{l.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-[10px] flex gap-[6px]">
+        <button onClick={onBack} className="flex-1 h-[28px] rounded-md border border-border/60 bg-background/30 px-2 text-[11px] font-semibold text-foreground hover:bg-primary/10">Voltar</button>
+        <button className="h-[28px] rounded-md border border-primary/45 bg-primary/10 px-3 text-[11px] font-semibold text-primary hover:bg-primary/20 inline-flex items-center gap-1">
+          <Download className="h-3 w-3" /> Exportar
+        </button>
+      </div>
+    </Panel>
   );
 }
 
