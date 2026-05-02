@@ -426,7 +426,7 @@ function TimelinePanel({
       <TimelineDuration className="left-[69.1%] top-[47px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
 
       <TimelineNode
-        className="left-[6.2%] top-[49px]"
+        className="left-[5.6%] top-[49px]"
         title="RECEBIMENTO"
         titleClass="text-success"
         icon={<Archive className="h-[25px] w-[25px]" />}
@@ -448,7 +448,7 @@ function TimelinePanel({
         done={conferenciaIniciada}
       />
       <TimelineNode
-        className="right-[3.8%] top-[49px]"
+        className="right-[3.2%] top-[49px]"
         title="CONFERÊNCIA FINALIZADA"
         titleClass="text-success"
         icon={<CheckCircle2 className="h-[27px] w-[27px]" />}
@@ -487,15 +487,15 @@ function TimelineNode({
 }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className={cn("absolute z-20 flex w-[245px] flex-col items-center text-center", className)}>
+    <div className={cn("absolute z-20 flex w-[245px] max-w-[24vw] flex-col items-center text-center", className)}>
       <div className="relative mb-[14px] flex h-[62px] w-[62px] items-center justify-center rounded-full border-[3px]" style={{ color: `hsl(var(${toneVar}))`, borderColor: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.12)`, boxShadow: `0 0 23px hsl(var(${toneVar}) / 0.72), inset 0 0 20px hsl(var(${toneVar}) / 0.17)` }}>
         <div className="absolute inset-[-10px] rounded-full border" style={{ borderColor: `hsl(var(${toneVar}) / 0.18)`, boxShadow: `0 0 18px hsl(var(${toneVar}) / 0.25)` }} />
         {icon}
         {done && <span className="absolute -bottom-[3px] -right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full bg-success text-success-foreground shadow-[0_0_10px_hsl(var(--success))]"><Check className="h-[11px] w-[11px]" /></span>}
       </div>
-      <p className={cn("text-[15px] font-black leading-none", titleClass)}>{title}</p>
-      <p className="mt-[10px] text-[11px] leading-none text-muted-foreground">{date}</p>
-      <p className="mt-[7px] text-[11px] leading-none text-muted-foreground">{description}</p>
+      <p className={cn("max-w-full truncate text-[15px] font-black leading-none", titleClass)}>{title}</p>
+      <p className="mt-[10px] max-w-full truncate text-[11px] leading-none text-muted-foreground">{date}</p>
+      <p className="mt-[7px] max-w-full truncate text-[11px] leading-none text-muted-foreground">{description}</p>
       <span className="mt-[11px] rounded-full border border-success/25 bg-success/15 px-[15px] py-[5px] text-[11px] font-bold text-success shadow-[0_0_10px_hsl(var(--success)/0.16)]">{status}</span>
     </div>
   );
