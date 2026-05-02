@@ -565,7 +565,7 @@ function ResumoProcessoCard({ row, taxaSucesso }: { row: Row; taxaSucesso: numbe
   return (
     <Panel className="min-h-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<BarChart3 className="h-[17px] w-[17px] text-primary" />} title="Resumo do Processo" />
-      <div className="mt-[17px] grid grid-cols-4 gap-[10px]">
+      <div className="mt-[17px] grid min-w-0 grid-cols-4 gap-[10px]">
         <MetricCard label="SKUs conferidos" value={`${row.skus_conferidos || row.total_itens || 7}/${row.total_itens || 7}`} icon={<Box className="h-[21px] w-[21px]" />} tone="primary" />
         <MetricCard label="Quantidade conferida" value={`${Number(row.conferido || row.total_qtd_esperada || 100400).toLocaleString("pt-BR")}/${Number(row.total_qtd_esperada || 100400).toLocaleString("pt-BR")}`} icon={<CheckCircle2 className="h-[21px] w-[21px]" />} tone="success" />
         <MetricCard label="Itens com divergência" value={`${row.divergencias}`} icon={<Clock className="h-[21px] w-[21px]" />} tone="warning" />
@@ -585,11 +585,11 @@ function ResumoProcessoCard({ row, taxaSucesso }: { row: Row; taxaSucesso: numbe
 function MetricCard({ label, value, icon, tone }: { label: string; value: string; icon: ReactNode; tone: "primary" | "success" | "warning" | "accent" }) {
   const toneVar = tone === "success" ? "--success" : tone === "warning" ? "--warning" : tone === "accent" ? "--primary" : "--primary";
   return (
-    <div className="rounded-md border border-border/55 bg-card/70 p-[12px] shadow-[inset_0_0_22px_hsl(var(--primary)/0.04)]">
+    <div className="min-w-0 rounded-md border border-border/55 bg-card/70 p-[12px] shadow-[inset_0_0_22px_hsl(var(--primary)/0.04)]">
       <p className="h-[28px] text-[11px] leading-[1.25] text-muted-foreground">{label}</p>
       <div className="mt-[12px] flex items-center justify-between gap-2">
-        <p className="truncate text-[22px] font-black leading-none tabular-nums">{value}</p>
-        <span style={{ color: `hsl(var(${toneVar}))`, filter: `drop-shadow(0 0 7px hsl(var(${toneVar}) / 0.75))` }}>{icon}</span>
+        <p className="min-w-0 truncate text-[22px] font-black leading-none tabular-nums">{value}</p>
+        <span className="shrink-0" style={{ color: `hsl(var(${toneVar}))`, filter: `drop-shadow(0 0 7px hsl(var(${toneVar}) / 0.75))` }}>{icon}</span>
       </div>
       <div className="mt-[16px] h-[4px] rounded-full" style={{ background: `hsl(var(${toneVar}) / 0.18)` }}>
         <div className="h-full w-full rounded-full" style={{ background: `hsl(var(${toneVar}))`, boxShadow: `0 0 9px hsl(var(${toneVar}) / 0.85)` }} />
