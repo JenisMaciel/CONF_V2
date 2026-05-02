@@ -728,17 +728,24 @@ function Panel({ className, children }: { className?: string; children: ReactNod
 
 function TimeDetailsCard({ row, totalLabel, ateInicioLabel, conferenciaLabel }: { row: Row; totalLabel: string; ateInicioLabel: string; conferenciaLabel: string }) {
   return (
-    <Panel className="min-h-0 overflow-hidden p-[18px]">
-      <SectionTitle icon={<Clock className="h-[17px] w-[17px] text-primary" />} title="Detalhes do Tempo" />
-      <div className="mt-[21px] space-y-[18px] text-[13px]">
-        <DetailLine icon={<Calendar className="h-[16px] w-[16px]" />} label="Recebido em:" value={fmtDateTime(row.recebida_em)} />
-        <DetailLine icon={<Calendar className="h-[16px] w-[16px]" />} label="Início da conferência:" value={fmtDateTime(row.conferencia_inicio)} />
-        <DetailLine icon={<Calendar className="h-[16px] w-[16px]" />} label="Finalização da conferência:" value={fmtDateTime(row.finalizada_em)} />
+    <Panel className="min-h-0 overflow-hidden p-[16px] flex flex-col">
+      <SectionTitle icon={<Clock className="h-[16px] w-[16px] text-primary" />} title="Detalhes do Tempo" />
+      <div className="mt-[14px] space-y-[10px] text-[12px]">
+        <DetailLine icon={<Calendar className="h-[14px] w-[14px]" />} label="Recebido em:" value={fmtDateTime(row.recebida_em)} />
+        <DetailLine icon={<Calendar className="h-[14px] w-[14px]" />} label="Início da conferência:" value={fmtDateTime(row.conferencia_inicio)} />
+        <DetailLine icon={<Calendar className="h-[14px] w-[14px]" />} label="Finalização da conferência:" value={fmtDateTime(row.finalizada_em)} />
       </div>
-      <div className="mt-[26px] border-t border-border/55 pt-[19px]">
-        <Kv label="Tempo total do processo:" value={totalLabel} valueClass="text-primary" />
-        <Kv label="Tempo até início:" value={ateInicioLabel} valueClass="text-success" />
-        <Kv label="Tempo de conferência:" value={conferenciaLabel} valueClass="text-primary" />
+      <div className="mt-[14px] border-t border-border/55 pt-[12px] space-y-[2px]">
+        <Kv label="Duração de Recebimento:" value={ateInicioLabel} valueClass="text-primary-glow" />
+        <Kv label="Duração de Configuração:" value={conferenciaLabel} valueClass="text-accent" />
+      </div>
+      <div className="mt-[14px] border-t border-border/55 pt-[10px] flex-1 min-h-0 overflow-auto">
+        <p className="text-[13px] font-black text-foreground mb-[6px]">Micro-log:</p>
+        <ul className="text-[11px] text-muted-foreground space-y-[5px] list-disc pl-4">
+          <li>Recebido em processo início → Concluído</li>
+          <li>Conferência da conferência → <span className="text-foreground font-semibold">Início de Conferência</span></li>
+          <li>Conferência da conferência → status de Configuração</li>
+        </ul>
       </div>
     </Panel>
   );
