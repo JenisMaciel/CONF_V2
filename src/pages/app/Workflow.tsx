@@ -18,11 +18,12 @@ async function excluirRemessaCascata(id: string) {
 }
 
 const detectarTurno = (d: Date) => {
-  const h = d.getHours();
-  if (h >= 5 && h < 12) return "Manhã";
-  if (h >= 12 && h < 18) return "Tarde";
-  if (h >= 18 && h < 23) return "Noite";
-  return "Madrugada";
+  const minutes = d.getHours() * 60 + d.getMinutes();
+  // 1º Turno: 07:00 às 15:30
+  if (minutes >= 7 * 60 && minutes < 15 * 60 + 30) return "1º Turno (07:00 às 15:30)";
+  // 2º Turno: 15:30 às 23:30
+  if (minutes >= 15 * 60 + 30 && minutes < 23 * 60 + 30) return "2º Turno (15:30 às 23:30)";
+  return "Fora de turno";
 };
 
 export default function Workflow() {
