@@ -80,6 +80,12 @@ export default function Login() {
             </Button>
           </form>
 
+          <div className="mt-4 text-center">
+            <a href="/forgot-password" className="text-sm text-primary hover:underline">
+              Esqueci minha senha
+            </a>
+          </div>
+
           <p className="mt-6 text-xs text-muted-foreground text-center">
             Solicite acesso ao administrador do sistema.
           </p>
