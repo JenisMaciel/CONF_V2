@@ -429,11 +429,11 @@ function TimelinePanel({
         </div>
 
         <img src={timelineForklift} alt="" loading="lazy" width={645} height={561}
-          className="pointer-events-none absolute left-[7.8%] top-[70px] z-20 h-[96px] w-[132px] select-none object-contain drop-shadow-[0_12px_20px_hsl(var(--warning)/0.35)]" />
+          className="pointer-events-none absolute left-[10.1%] top-[75px] z-20 h-[96px] w-[132px] select-none object-contain drop-shadow-[0_12px_20px_hsl(var(--warning)/0.35)]" />
         <img src={timelineScanner} alt="" loading="lazy" width={767} height={690}
-          className="pointer-events-none absolute left-[37.5%] top-[84px] z-20 h-[115px] w-[128px] select-none object-contain drop-shadow-[0_12px_22px_hsl(var(--primary)/0.34)]" />
+          className="pointer-events-none absolute left-[38.6%] top-[84px] z-20 h-[115px] w-[128px] select-none object-contain drop-shadow-[0_12px_22px_hsl(var(--primary)/0.34)]" />
         <img src={timelineGridBoxes} alt="" loading="lazy" width={441} height={384}
-          className="pointer-events-none absolute left-[55.2%] top-[92px] z-10 h-[70px] w-[82px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
+          className="pointer-events-none absolute left-[55.8%] top-[92px] z-10 h-[70px] w-[82px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
         <img src={timelineShelf} alt="" loading="lazy" width={550} height={895}
           className="pointer-events-none absolute right-[8.1%] top-[29px] z-20 h-[166px] w-[103px] select-none object-contain drop-shadow-[0_16px_26px_hsl(var(--primary-glow)/0.48)]" />
         <div className="absolute right-[9.6%] top-[153px] z-30 flex h-[66px] w-[66px] items-center justify-center rounded-full border-[5px] border-success/65 bg-success text-success-foreground shadow-[0_0_0_4px_hsl(var(--background)/0.68),0_0_20px_hsl(var(--success)/0.58),inset_0_0_14px_hsl(var(--foreground)/0.25)]">
@@ -444,7 +444,7 @@ function TimelinePanel({
         <TimePill className="left-[72.7%] top-[48px]" label="Tempo de conferência" value={conferenciaLabel} />
 
         <VolumeBadge className="left-[21.9%] top-[126px]" label="Volume Total Recebido:" value="10 Pallets" />
-        <VolumeBadge className="left-[48.5%] top-[219px] -translate-x-1/2" label="Volume Total Recebido:" value="1 Pallets" />
+        <VolumeBadge className="left-[48.5%] top-[206px] -translate-x-1/2" label="Volume Total Recebido:" value="1 Pallets" />
         <VolumeBadge className="left-[72.2%] top-[126px]" label="Volume Total Recebido:" value="12 Pallets" />
 
         <TimelineNode
