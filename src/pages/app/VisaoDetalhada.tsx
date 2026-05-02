@@ -697,12 +697,12 @@ function timeOnly(s?: string | null) {
 
 function QuickActions({ onBack }: { onBack: () => void }) {
   return (
-    <Panel className="min-h-0 p-[15px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<Zap className="h-[17px] w-[17px] text-warning" />} title="Ações rápidas" />
-      <div className="mt-[18px] grid grid-cols-3 gap-[12px]">
+      <div className="mt-[18px] grid min-w-0 grid-cols-3 gap-[12px]">
         <ActionButton icon={<Download className="h-[16px] w-[16px]" />} label="Exportar relatório" />
         <ActionButton icon={<Printer className="h-[16px] w-[16px]" />} label="Imprimir" />
-        <button onClick={onBack} className="flex h-[36px] items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
+        <button onClick={onBack} className="flex h-[36px] min-w-0 items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
           <PlusCircle className="h-[16px] w-[16px]" /> Novo processo
         </button>
       </div>
@@ -712,8 +712,8 @@ function QuickActions({ onBack }: { onBack: () => void }) {
 
 function ActionButton({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <button className="flex h-[36px] items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
-      {icon} {label}
+    <button className="flex h-[36px] min-w-0 items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
+      <span className="shrink-0">{icon}</span> <span className="truncate">{label}</span>
     </button>
   );
 }
