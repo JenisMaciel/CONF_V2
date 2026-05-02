@@ -611,9 +611,6 @@ function TimelinePanel({
           className="pointer-events-none absolute left-[55.8%] top-[92px] z-10 h-[70px] w-[82px] select-none object-contain drop-shadow-[0_10px_22px_hsl(var(--primary)/0.42)]" />
         <img src={timelineShelf} alt="" loading="lazy" width={550} height={895}
           className="pointer-events-none absolute right-[8.1%] top-[29px] z-20 h-[166px] w-[103px] select-none object-contain drop-shadow-[0_16px_26px_hsl(var(--primary-glow)/0.48)]" />
-        <div className="absolute right-[9.6%] top-[153px] z-30 flex h-[66px] w-[66px] items-center justify-center rounded-full border-[5px] border-success/65 bg-success text-success-foreground shadow-[0_0_0_4px_hsl(var(--background)/0.68),0_0_20px_hsl(var(--success)/0.58),inset_0_0_14px_hsl(var(--foreground)/0.25)]">
-          <Check className="h-[42px] w-[42px] stroke-[4]" />
-        </div>
 
         <TimePill className="left-[27.1%] top-[48px]" label="Tempo até início" value={ateInicioLabel} />
         <TimePill className="left-[72.7%] top-[48px]" label="Tempo de conferência" value={conferenciaLabel} />
