@@ -1,0 +1,1 @@
+ALTER TABLE public.remessas ADD COLUMN IF NOT EXISTS volume numeric NOT NULL DEFAULT 0;
