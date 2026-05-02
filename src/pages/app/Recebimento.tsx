@@ -30,6 +30,7 @@ export default function Recebimento() {
   const [novaProcesso, setNovaProcesso] = useState("");
   const [novaNumero, setNovaNumero] = useState("");
   const [novaQtdProcesso, setNovaQtdProcesso] = useState("");
+  const [novaVolume, setNovaVolume] = useState("");
   const [novaOrigem, setNovaOrigem] = useState<string>("");
   const [novaOrigemOutros, setNovaOrigemOutros] = useState("");
   const [novaDivergencia, setNovaDivergencia] = useState<"sim" | "nao">("nao");
@@ -103,6 +104,7 @@ export default function Recebimento() {
         total_qtd_esperada: totalQtd,
         criado_por: user?.id,
         qtd_processo: Number(novaQtdProcesso) || 0,
+        volume: Number(novaVolume) || 0,
         origem: novaOrigem,
         origem_outros: novaOrigem === "OUTROS" ? novaOrigemOutros.trim() : null,
         divergencia_recebimento: novaDivergencia === "sim",
@@ -116,7 +118,7 @@ export default function Recebimento() {
       if (e2) throw e2;
 
       toast.success(`Remessa criada com ${itensImp.length} itens — enviada ao Workflow`);
-      setNovaProcesso(""); setNovaNumero(""); setNovaQtdProcesso(""); setNovaOrigem("");
+      setNovaProcesso(""); setNovaNumero(""); setNovaQtdProcesso(""); setNovaVolume(""); setNovaOrigem("");
       setNovaOrigemOutros(""); setNovaDivergencia("nao"); setNovaDivergenciaComentario("");
       setNovaFile(null); setPreviewItens([]); setPreviewError("");
       if (fileRef.current) fileRef.current.value = "";
@@ -156,6 +158,10 @@ export default function Recebimento() {
             <div>
               <Label>Qtde do Processo</Label>
               <Input className="mt-2" type="number" min={0} value={novaQtdProcesso} onChange={(e) => setNovaQtdProcesso(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <Label>Volume</Label>
+              <Input className="mt-2" type="number" min={0} step="0.01" value={novaVolume} onChange={(e) => setNovaVolume(e.target.value)} placeholder="Ex: 10 (pallets, caixas, m³...)" />
             </div>
             <div>
               <Label>Origem <span className="text-destructive">*</span></Label>
