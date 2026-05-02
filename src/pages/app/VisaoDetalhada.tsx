@@ -419,7 +419,7 @@ function TimelinePanel({
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--background)/0.92)_0%,transparent_14%,transparent_84%,hsl(var(--background)/0.92)_100%)]" />
 
       <div className="relative z-10">
-        <h2 className="text-[20px] font-black leading-none tracking-[-0.01em] text-foreground">Linha do Tempo do Processo</h2>
+        <h2 className="text-[20px] font-black leading-none text-foreground">Linha do Tempo do Processo</h2>
       </div>
 
       <div className="relative mt-[8px] h-[252px] w-full min-w-0">
@@ -489,7 +489,7 @@ function TimePill({ className, label, value }: { className: string; label: strin
   return (
     <div
       className={cn("absolute z-40 h-[60px] w-[150px] -translate-x-1/2 rounded-[7px] border border-warning/70 px-[12px] pt-[9px] text-center shadow-[0_0_16px_hsl(var(--warning)/0.52),inset_0_0_14px_hsl(var(--warning)/0.30)]", className)}
-      style={{ background: "linear-gradient(180deg, hsl(25 88% 56%), hsl(22 82% 43%))" }}
+      style={{ background: "var(--gradient-orange)" }}
     >
       <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[7px] border-x-transparent border-t-warning/55" />
       <p className="text-[10px] font-semibold leading-none text-foreground/85">{label}</p>
@@ -513,7 +513,7 @@ function VolumeBadge({ className, label, value }: { className: string; label: st
 }
 
 function TimelineNode({
-  className, title, titleClass, icon, date, description, status, tone, done,
+  className, title, titleClass, icon, date, description, status, done,
 }: {
   className: string;
   title: string;
@@ -525,7 +525,6 @@ function TimelineNode({
   tone: "success" | "primary";
   done: boolean;
 }) {
-  const toneVar = tone === "success" ? "--success" : "--primary";
   return (
     <div className={cn("absolute z-30 flex w-[150px] flex-col items-center text-center", className)}>
       <div className="relative mb-[15px] flex h-[60px] w-[60px] items-center justify-center rounded-full border-[2px]" style={{ color: `hsl(var(--warning))`, borderColor: `hsl(var(--warning) / 0.62)`, background: `hsl(var(--warning) / 0.17)`, boxShadow: `0 0 16px hsl(var(--warning) / 0.38), inset 0 0 14px hsl(var(--warning) / 0.14)` }}>
