@@ -667,20 +667,6 @@ export default function Conferencia() {
                   {recontando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
                 </Button>
               </form>
-              <div className="overflow-x-auto max-h-[360px] overflow-y-auto mt-2">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="text-right">Esperado</TableHead>
-                      <TableHead className="text-right">Conferido</TableHead>
-                      <TableHead className="text-right">Dif.</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itensDivergentes.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">Sem divergências</TableCell></TableRow>
               <div className="flex items-center justify-between mt-2">
                 <p className="text-xs text-muted-foreground">
                   Ao zerar, as bipagens do item são apagadas para você conferir todo o material novamente.
