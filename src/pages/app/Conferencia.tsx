@@ -512,17 +512,14 @@ export default function Conferencia() {
       {/* Tabela importada (com busca) */}
       <Card className="p-0 overflow-hidden border-border/50 shadow-card">
         <div className="p-4 border-b border-border bg-card flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="font-semibold">Arquivo da Remessa</h2>
             <Badge variant="secondary">{fmtNum(itens.length)} itens</Badge>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Input placeholder="Buscar produto..." value={searchItens} onChange={(e) => setSearchItens(e.target.value)} className="max-w-xs" />
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   disabled={!itensDivergentes.length}
-                  className="bg-orange-500 text-white hover:bg-orange-600 disabled:bg-orange-500/50"
+                  className="bg-orange-500 text-white hover:bg-orange-600 disabled:bg-orange-500/50 ml-2"
                 >
                   <RefreshCcw className="h-4 w-4 mr-2" />
                   Recontar Divergentes ({itensDivergentes.length})
@@ -613,6 +610,9 @@ export default function Conferencia() {
                 </div>
               </DialogContent>
             </Dialog>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input placeholder="Buscar produto..." value={searchItens} onChange={(e) => setSearchItens(e.target.value)} className="max-w-xs" />
           </div>
         </div>
         <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
