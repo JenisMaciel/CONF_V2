@@ -41,7 +41,6 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      {!isDetailedVision && (
       <aside
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform w-64",
@@ -91,10 +90,9 @@ export default function AppLayout() {
           </Button>
         </div>
       </aside>
-      )}
 
       {/* Mobile overlay */}
-      {open && !isDetailedVision && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setOpen(false)} />}
 
       {/* Main */}
       <main className="flex-1 flex flex-col min-w-0">
