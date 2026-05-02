@@ -541,21 +541,21 @@ function SectionTitle({ icon, title }: { icon: ReactNode; title: string }) {
 
 function DetailLine({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-[16px] text-muted-foreground">
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(150px,auto)] items-center gap-[16px] text-muted-foreground">
       <div className="flex items-center gap-[12px] min-w-0">
         <span className="shrink-0 text-muted-foreground">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
-      <span className="shrink-0 font-medium tabular-nums text-foreground">{value}</span>
+      <span className="truncate text-right font-medium tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
 
 function Kv({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-[9px] text-[14px]">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("tabular-nums font-bold", valueClass)}>{value}</span>
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(70px,auto)] items-center gap-4 py-[9px] text-[14px]">
+      <span className="truncate text-muted-foreground">{label}</span>
+      <span className={cn("truncate text-right tabular-nums font-bold", valueClass)}>{value}</span>
     </div>
   );
 }
