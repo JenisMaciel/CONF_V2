@@ -516,7 +516,101 @@ export default function Conferencia() {
             <h2 className="font-semibold">Arquivo da Remessa</h2>
             <Badge variant="secondary">{fmtNum(itens.length)} itens</Badge>
           </div>
-          <Input placeholder="Buscar produto..." value={searchItens} onChange={(e) => setSearchItens(e.target.value)} className="max-w-xs" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input placeholder="Buscar produto..." value={searchItens} onChange={(e) => setSearchItens(e.target.value)} className="max-w-xs" />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" disabled={!itensDivergentes.length}>
+                  <RefreshCcw className="h-4 w-4 mr-2" />
+                  Recontar Divergentes ({itensDivergentes.length})
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Recontar itens divergentes</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={recontarItem} className="grid sm:grid-cols-[1fr_120px_auto] gap-3 items-end">
+                  <div>
+                    <Label>Código</Label>
+                    <Input value={recontaCodigo} onChange={(e) => setRecontaCodigo(e.target.value)} className="mt-2 font-mono" placeholder="EAN / SKU" />
+                  </div>
+                  <div>
+                    <Label>Quantidade</Label>
+                    <Input type="number" min={1} value={recontaQtd} onChange={(e) => setRecontaQtd(e.target.value)} className="mt-2" />
+                  </div>
+                  <Button type="submit" disabled={recontando}>
+                    {recontando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
+                  </Button>
+                </form>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-xs text-muted-foreground">
+                    Ao zerar, as bipagens do item são apagadas para você conferir todo o material novamente.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" disabled={!itensDivergentes.length}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Zerar todos divergentes
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Zerar todos os itens divergentes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Todas as bipagens dos {itensDivergentes.length} itens divergentes serão apagadas.
+                          Você poderá conferir o material novamente do zero.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={zerarTodosDivergentes}>Zerar tudo</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+                <div className="overflow-x-auto max-h-[360px] overflow-y-auto mt-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead className="text-right">Esperado</TableHead>
+                        <TableHead className="text-right">Conferido</TableHead>
+                        <TableHead className="text-right">Dif.</TableHead>
+                        <TableHead className="text-right">Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {itensDivergentes.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">Sem divergências</TableCell></TableRow>
+                      ) : itensDivergentes.map((i) => (
+                        <TableRow key={i.id}>
+                          <TableCell className="font-mono text-xs">
+                            <button className="underline hover:text-primary" onClick={() => setRecontaCodigo(i.codigo)} type="button">{i.codigo}</button>
+                          </TableCell>
+                          <TableCell className="text-xs">{i.descricao}</TableCell>
+                          <TableCell className="text-right">{fmtNum(i.qtd_esperada)}</TableCell>
+                          <TableCell className="text-right">{fmtNum(i.conferido)}</TableCell>
+                          <TableCell className="text-right"><DiffBadge value={i.conferido - Number(i.qtd_esperada)} /></TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => zerarItemParaRecontagem(i.codigo)}
+                              className="text-destructive border-destructive/40 hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 mr-1" />
+                              Zerar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
           <Table>
@@ -642,100 +736,6 @@ export default function Conferencia() {
 
       {selected && progresso.totalItens > 0 && (
         <div className="flex flex-wrap justify-end gap-3">
-          {/* Recontar divergentes */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="lg" variant="outline" disabled={!itensDivergentes.length}>
-                <RefreshCcw className="h-4 w-4 mr-2" />
-                Recontar Divergentes ({itensDivergentes.length})
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Recontar itens divergentes</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={recontarItem} className="grid sm:grid-cols-[1fr_120px_auto] gap-3 items-end">
-                <div>
-                  <Label>Código</Label>
-                  <Input value={recontaCodigo} onChange={(e) => setRecontaCodigo(e.target.value)} className="mt-2 font-mono" placeholder="EAN / SKU" />
-                </div>
-                <div>
-                  <Label>Quantidade</Label>
-                  <Input type="number" min={1} value={recontaQtd} onChange={(e) => setRecontaQtd(e.target.value)} className="mt-2" />
-                </div>
-                <Button type="submit" disabled={recontando}>
-                  {recontando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
-                </Button>
-              </form>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-muted-foreground">
-                  Ao zerar, as bipagens do item são apagadas para você conferir todo o material novamente.
-                </p>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" disabled={!itensDivergentes.length}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Zerar todos divergentes
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Zerar todos os itens divergentes?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Todas as bipagens dos {itensDivergentes.length} itens divergentes serão apagadas.
-                        Você poderá conferir o material novamente do zero.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={zerarTodosDivergentes}>Zerar tudo</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-              <div className="overflow-x-auto max-h-[360px] overflow-y-auto mt-2">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="text-right">Esperado</TableHead>
-                      <TableHead className="text-right">Conferido</TableHead>
-                      <TableHead className="text-right">Dif.</TableHead>
-                      <TableHead className="text-right">Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itensDivergentes.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">Sem divergências</TableCell></TableRow>
-                    ) : itensDivergentes.map((i) => (
-                      <TableRow key={i.id}>
-                        <TableCell className="font-mono text-xs">
-                          <button className="underline hover:text-primary" onClick={() => setRecontaCodigo(i.codigo)} type="button">{i.codigo}</button>
-                        </TableCell>
-                        <TableCell className="text-xs">{i.descricao}</TableCell>
-                        <TableCell className="text-right">{fmtNum(i.qtd_esperada)}</TableCell>
-                        <TableCell className="text-right">{fmtNum(i.conferido)}</TableCell>
-                        <TableCell className="text-right"><DiffBadge value={i.conferido - Number(i.qtd_esperada)} /></TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => zerarItemParaRecontagem(i.codigo)}
-                            className="text-destructive border-destructive/40 hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-1" />
-                            Zerar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </DialogContent>
-          </Dialog>
-
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="lg" variant="secondary" disabled={closingBip}>
