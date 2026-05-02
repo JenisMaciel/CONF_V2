@@ -578,7 +578,7 @@ function SlaRing({ value }: { value: number }) {
   const innerGap = (innerCirc / innerSeg) - innerDash;
 
   return (
-    <div className="relative h-[120px] w-[120px]">
+    <div className="relative h-[160px] w-[160px]">
       <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 65%)" }} />
       <svg viewBox="0 0 200 200" className="relative h-full w-full">
         <defs>
