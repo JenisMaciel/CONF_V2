@@ -599,8 +599,8 @@ function SlaRing({ value }: { value: number }) {
         <circle cx="100" cy="100" r="48" fill="none" stroke={neon} strokeWidth="1.5" opacity="0.6" filter="url(#neonGlow)" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[20px] font-black leading-none tracking-wider" style={{ color: neonSoft, textShadow: `0 0 8px ${neon}, 0 0 16px ${neon}` }}>{clamped}%</span>
-        <span className="mt-[4px] text-[8px] font-medium tracking-wide" style={{ color: neonSoft, textShadow: `0 0 6px ${neon}` }}>Dentro do SLA</span>
+        <span className="text-[26px] font-black leading-none tracking-wider" style={{ color: neonSoft, textShadow: `0 0 10px ${neon}, 0 0 20px ${neon}` }}>{clamped}%</span>
+        <span className="mt-[6px] text-[10px] font-medium tracking-wide" style={{ color: neonSoft, textShadow: `0 0 6px ${neon}` }}>Dentro do SLA</span>
       </div>
     </div>
   );
