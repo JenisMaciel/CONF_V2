@@ -252,6 +252,37 @@ export default function Conferencia() {
     if (error) toast.error(error.message); else toast.success("Bipagem removida");
   };
 
+  const zerarItemParaRecontagem = async (codigoItem: string) => {
+    if (!selected) return;
+    const { error } = await supabase
+      .from("conferencias")
+      .delete()
+      .eq("remessa_id", selected)
+      .eq("codigo", codigoItem);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("remessa_itens")
+      .update({ qtd_conferida: 0 })
+      .eq("remessa_id", selected)
+      .eq("codigo", codigoItem);
+    toast.success(`Item ${codigoItem} zerado — pronto para recontagem`);
+  };
+
+  const zerarTodosDivergentes = async () => {
+    if (!selected || !itensDivergentes.length) return;
+    const codigos = itensDivergentes.map((i) => i.codigo);
+    const { error } = await supabase
+      .from("conferencias")
+      .delete()
+      .eq("remessa_id", selected)
+      .in("codigo", codigos);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("remessa_itens")
+      .update({ qtd_conferida: 0 })
+      .eq("remessa_id", selected)
+      .in("codigo", codigos);
+    toast.success(`${codigos.length} itens zerados para recontagem`);
+  };
+
   const recontarItem = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected || !user || !recontaCodigo.trim()) return;
@@ -636,6 +667,32 @@ export default function Conferencia() {
                   {recontando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
                 </Button>
               </form>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Ao zerar, as bipagens do item são apagadas para você conferir todo o material novamente.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive" disabled={!itensDivergentes.length}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Zerar todos divergentes
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Zerar todos os itens divergentes?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Todas as bipagens dos {itensDivergentes.length} itens divergentes serão apagadas.
+                        Você poderá conferir o material novamente do zero.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={zerarTodosDivergentes}>Zerar tudo</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
               <div className="overflow-x-auto max-h-[360px] overflow-y-auto mt-2">
                 <Table>
                   <TableHeader>
@@ -645,11 +702,12 @@ export default function Conferencia() {
                       <TableHead className="text-right">Esperado</TableHead>
                       <TableHead className="text-right">Conferido</TableHead>
                       <TableHead className="text-right">Dif.</TableHead>
+                      <TableHead className="text-right">Ação</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {itensDivergentes.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">Sem divergências</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">Sem divergências</TableCell></TableRow>
                     ) : itensDivergentes.map((i) => (
                       <TableRow key={i.id}>
                         <TableCell className="font-mono text-xs">
@@ -659,6 +717,17 @@ export default function Conferencia() {
                         <TableCell className="text-right">{fmtNum(i.qtd_esperada)}</TableCell>
                         <TableCell className="text-right">{fmtNum(i.conferido)}</TableCell>
                         <TableCell className="text-right"><DiffBadge value={i.conferido - Number(i.qtd_esperada)} /></TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => zerarItemParaRecontagem(i.codigo)}
+                            className="text-destructive border-destructive/40 hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            Zerar
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
