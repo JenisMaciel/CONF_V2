@@ -330,6 +330,7 @@ export type Database = {
           total_itens: number
           total_qtd_esperada: number
           updated_at: string
+          volume: number
         }
         Insert: {
           categoria: string
@@ -356,6 +357,7 @@ export type Database = {
           total_itens?: number
           total_qtd_esperada?: number
           updated_at?: string
+          volume?: number
         }
         Update: {
           categoria?: string
@@ -382,6 +384,7 @@ export type Database = {
           total_itens?: number
           total_qtd_esperada?: number
           updated_at?: string
+          volume?: number
         }
         Relationships: []
       }
