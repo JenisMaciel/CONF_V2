@@ -605,7 +605,7 @@ function DesempenhoCard() {
         <SectionTitle icon={<Activity className="h-[17px] w-[17px] text-success" />} title="Desempenho dos Processos" />
         <button className="rounded-md border border-border/50 bg-background/25 px-[12px] py-[5px] text-[11px] text-foreground">Últimos 7 dias</button>
       </div>
-      <div className="mt-[13px] grid h-[calc(100%-42px)] grid-cols-3 gap-[8px]">
+      <div className="mt-[13px] grid h-[calc(100%-42px)] min-w-0 grid-cols-3 gap-[8px]">
         <MiniLineCard label="Tempo médio" value="48 min" delta="↓ -12% vs. período anterior" tone="primary" data={[42, 45, 37, 44, 36, 39, 51, 46, 34, 32, 49, 83, 76]} />
         <MiniLineCard label="Taxa de sucesso" value="98,6%" delta="↑ +2,4% vs. período anterior" tone="success" data={[28, 31, 45, 50, 35, 31, 42, 48, 47, 44, 52, 67, 57, 46]} />
         <MiniLineCard label="Processos concluídos" value="24" delta="↑ +6 vs. período anterior" tone="primary" data={[35, 42, 48, 33, 27, 38, 52, 52, 51, 45, 36, 48, 64, 67, 59]} />
@@ -617,10 +617,10 @@ function DesempenhoCard() {
 function MiniLineCard({ label, value, delta, tone, data }: { label: string; value: string; delta: string; tone: "primary" | "success"; data: number[] }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className="relative overflow-hidden rounded-md border border-border/55 bg-card/62 p-[11px]">
+    <div className="relative min-w-0 overflow-hidden rounded-md border border-border/55 bg-card/62 p-[11px]">
       <p className="text-[11px] font-medium leading-none text-muted-foreground">{label}</p>
       <p className="mt-[10px] text-[20px] font-black leading-none">{value}</p>
-      <p className="mt-[8px] text-[10px] leading-none" style={{ color: `hsl(var(${toneVar}))` }}>{delta}</p>
+      <p className="mt-[8px] truncate text-[10px] leading-none" style={{ color: `hsl(var(${toneVar}))` }}>{delta}</p>
       <MiniSparkline data={data} toneVar={toneVar} />
     </div>
   );
