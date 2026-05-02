@@ -297,10 +297,10 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
 function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; totalLabel: string; taxaSucesso: number; copyNumero: () => void }) {
   return (
-    <Panel className="relative overflow-hidden p-[18px]">
+    <Panel className="relative min-w-0 overflow-hidden p-[18px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_32%,hsl(var(--primary)/0.20),transparent_34%),radial-gradient(circle_at_92%_70%,hsl(var(--success)/0.14),transparent_24%)]" />
-      <div className="relative z-10 flex h-full gap-[28px]">
-        <div className="min-w-0 flex-1">
+      <div className="relative z-10 grid h-full min-w-0 grid-cols-[minmax(320px,1fr)_540px_374px] gap-[28px]">
+        <div className="min-w-0">
           <Breadcrumb />
           <div className="mt-[25px] flex gap-[16px]">
             <div className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-lg border border-primary/40 bg-primary/12 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.28),inset_0_0_18px_hsl(var(--primary)/0.12)]">
@@ -322,7 +322,7 @@ function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; tot
           </div>
         </div>
 
-        <div className="mt-[46px] h-[118px] w-[540px] shrink-0 rounded-lg border border-border/35 bg-background/12 px-[28px] py-[22px] shadow-[inset_0_0_28px_hsl(var(--primary)/0.05)]">
+        <div className="mt-[46px] h-[118px] min-w-0 rounded-lg border border-border/35 bg-background/12 px-[28px] py-[22px] shadow-[inset_0_0_28px_hsl(var(--primary)/0.05)]">
           <div className="grid h-full grid-cols-3 gap-[28px]">
             <HeroMeta label="Status" icon={CheckCircle2}>
               <Badge variant="outline" className="mt-[7px] h-[30px] rounded-full border-success/35 bg-success/18 px-[14px] text-[11px] font-black text-success shadow-[0_0_12px_hsl(var(--success)/0.35)]">
