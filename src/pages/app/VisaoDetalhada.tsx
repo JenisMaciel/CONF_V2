@@ -369,12 +369,12 @@ function HeroMeta({ label, icon: Icon, children }: { label: string; icon: typeof
 
 function TotalProcessCard({ row, totalLabel, taxaSucesso }: { row: Row; totalLabel: string; taxaSucesso: number }) {
   return (
-    <div className="ml-auto grid h-full w-[374px] shrink-0 grid-cols-[1fr_118px] items-center rounded-lg border border-primary/45 bg-primary/12 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
-      <div>
+    <div className="grid h-full min-w-0 grid-cols-[minmax(0,1fr)_118px] items-center rounded-lg border border-primary/45 bg-primary/12 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
+      <div className="min-w-0">
         <p className="text-[12px] font-black uppercase leading-none text-primary">Tempo total do processo</p>
-        <p className="mt-[16px] text-[48px] font-black leading-none tracking-normal text-foreground drop-shadow-[0_0_10px_hsl(var(--primary)/0.38)]">{totalLabel}</p>
-        <p className="mt-[17px] text-[13px] leading-[1.45] text-muted-foreground">De {fmtDateTime(row.recebida_em)}</p>
-        <p className="text-[13px] leading-[1.45] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
+        <p className="mt-[16px] truncate text-[48px] font-black leading-none tracking-normal text-foreground drop-shadow-[0_0_10px_hsl(var(--primary)/0.38)]">{totalLabel}</p>
+        <p className="mt-[17px] truncate text-[13px] leading-[1.45] text-muted-foreground">De {fmtDateTime(row.recebida_em)}</p>
+        <p className="truncate text-[13px] leading-[1.45] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
       </div>
       <div className="flex flex-col items-center gap-[11px]">
         <SlaRing value={Math.round(taxaSucesso || 92)} />
