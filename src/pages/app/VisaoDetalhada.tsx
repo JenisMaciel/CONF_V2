@@ -657,9 +657,9 @@ function ActivityPanel({ row, concluido, conferenciaIniciada }: { row: Row; conc
   ];
 
   return (
-    <Panel className="min-h-0 overflow-hidden p-[16px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[16px]">
       <SectionTitle icon={<Activity className="h-[17px] w-[17px] text-primary" />} title="Atividade do Processo" />
-      <div className="mt-[13px] rounded-lg border border-border/35 bg-background/20">
+      <div className="mt-[13px] min-w-0 rounded-lg border border-border/35 bg-background/20">
         <div className="relative py-[2px]">
           <div className="absolute bottom-[28px] left-[30px] top-[28px] w-[2px] bg-[linear-gradient(180deg,hsl(var(--success)),hsl(var(--primary)),hsl(var(--success)))] shadow-[0_0_9px_hsl(var(--primary)/0.45)]" />
           {items.map((item, i) => <ActivityItem key={item.title} {...item} active={i === 1 && conferenciaIniciada} />)}
@@ -675,7 +675,7 @@ function ActivityPanel({ row, concluido, conferenciaIniciada }: { row: Row; conc
 function ActivityItem({ icon: Icon, title, desc, time, tone, active }: { icon: typeof CheckCircle2; title: string; desc: string; time: string; tone: "success" | "primary"; active?: boolean }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className="relative grid grid-cols-[48px_1fr_42px] gap-[0px] px-[11px] py-[9px] text-[12px]">
+    <div className="relative grid min-w-0 grid-cols-[48px_minmax(0,1fr)_42px] gap-[0px] px-[11px] py-[9px] text-[12px]">
       <div className="relative z-10 flex items-center justify-center">
         <span className={cn("flex h-[29px] w-[29px] items-center justify-center rounded-full border", active && "scale-105")} style={{ color: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.16)`, borderColor: `hsl(var(${toneVar}) / 0.5)`, boxShadow: `0 0 11px hsl(var(${toneVar}) / 0.45)` }}>
           <Icon className="h-[15px] w-[15px]" />
@@ -685,7 +685,7 @@ function ActivityItem({ icon: Icon, title, desc, time, tone, active }: { icon: t
         <p className="truncate text-[13px] font-black leading-none">{title}</p>
         <p className="mt-[5px] truncate text-[11px] leading-none text-muted-foreground">{desc}</p>
       </div>
-      <span className="text-right text-[12px] tabular-nums leading-none text-muted-foreground">{time}</span>
+      <span className="truncate text-right text-[12px] tabular-nums leading-none text-muted-foreground">{time}</span>
     </div>
   );
 }
