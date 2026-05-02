@@ -257,8 +257,8 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
   const copyNumero = () => navigator.clipboard?.writeText(row.numero);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground animate-fade-in">
-      <div className="h-screen min-h-[720px] max-h-[920px] p-[8px_8px_10px] grid grid-rows-[183px_214px_minmax(300px,1fr)_90px] gap-[10px]">
+    <main className="min-h-screen w-full overflow-hidden bg-background text-foreground animate-fade-in">
+      <div className="grid h-[100dvh] min-h-[720px] max-h-[920px] min-w-0 grid-rows-[183px_214px_minmax(0,1fr)_90px] gap-[10px] p-[8px_8px_10px]">
         <HeroPanel row={row} totalLabel={totalLabel} taxaSucesso={taxaSucesso} copyNumero={copyNumero} />
 
         <TimelinePanel
@@ -269,7 +269,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           concluido={concluido}
         />
 
-        <section className="grid min-h-0 grid-cols-[29%_43%_27%] gap-[12px]">
+        <section className="grid min-h-0 min-w-0 grid-cols-[29%_43%_27%] gap-[12px]">
           <TimeDetailsCard
             row={row}
             totalLabel={totalLabel}
@@ -277,7 +277,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
             conferenciaLabel={conferenciaLabel}
           />
 
-          <div className="grid min-h-0 grid-rows-[215px_1fr] gap-[10px]">
+          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(206px,215px)_minmax(0,1fr)] gap-[10px]">
             <ResumoProcessoCard row={row} taxaSucesso={taxaSucesso} />
             <DesempenhoCard />
           </div>
@@ -285,7 +285,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           <ActivityPanel row={row} concluido={concluido} conferenciaIniciada={conferenciaIniciada} />
         </section>
 
-        <section className="grid min-h-0 grid-cols-[35%_37%_1fr] gap-[10px]">
+        <section className="grid min-h-0 min-w-0 grid-cols-[35%_37%_1fr] gap-[10px]">
           <QuickActions onBack={onBack} />
           <ObservacoesPanel row={row} />
           <div />
