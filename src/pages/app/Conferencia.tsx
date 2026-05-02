@@ -520,7 +520,10 @@ export default function Conferencia() {
             <Input placeholder="Buscar produto..." value={searchItens} onChange={(e) => setSearchItens(e.target.value)} className="max-w-xs" />
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" disabled={!itensDivergentes.length}>
+                <Button
+                  disabled={!itensDivergentes.length}
+                  className="bg-orange-500 text-white hover:bg-orange-600 disabled:bg-orange-500/50"
+                >
                   <RefreshCcw className="h-4 w-4 mr-2" />
                   Recontar Divergentes ({itensDivergentes.length})
                 </Button>
