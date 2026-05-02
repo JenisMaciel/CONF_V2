@@ -416,17 +416,17 @@ function TimelinePanel({
         <h2 className="text-[15px] font-black leading-none">Linha do Tempo do Processo</h2>
       </div>
 
-      <div className="absolute left-[8.8%] right-[8.5%] top-[79px] h-[2px]">
+      <div className="absolute left-[8.8%] right-[8.5%] top-[75px] h-[2px]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--success)),hsl(var(--success)),hsl(var(--primary)),hsl(var(--success)))] shadow-[0_0_12px_hsl(var(--success)/0.65)]" />
         <div className="absolute left-[25.5%] top-1/2 h-[5px] w-[9%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--success))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
         <div className="absolute left-[68.8%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--primary))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
       </div>
 
-      <TimelineDuration className="left-[30.7%] top-[47px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
-      <TimelineDuration className="left-[69.1%] top-[47px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
+      <TimelineDuration className="left-[30.7%] top-[43px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
+      <TimelineDuration className="left-[69.1%] top-[43px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
 
       <TimelineNode
-        className="left-[5.6%] top-[49px]"
+        className="left-[5.6%] top-[43px]"
         title="RECEBIMENTO"
         titleClass="text-success"
         icon={<Archive className="h-[25px] w-[25px]" />}
@@ -437,7 +437,7 @@ function TimelinePanel({
         done
       />
       <TimelineNode
-        className="left-1/2 top-[49px] -translate-x-1/2"
+        className="left-1/2 top-[43px] -translate-x-1/2"
         title="INÍCIO DA CONFERÊNCIA"
         titleClass="text-primary"
         icon={<PlayCircle className="h-[27px] w-[27px]" />}
@@ -448,7 +448,7 @@ function TimelinePanel({
         done={conferenciaIniciada}
       />
       <TimelineNode
-        className="right-[3.2%] top-[49px]"
+        className="right-[3.2%] top-[43px]"
         title="CONFERÊNCIA FINALIZADA"
         titleClass="text-success"
         icon={<CheckCircle2 className="h-[27px] w-[27px]" />}
