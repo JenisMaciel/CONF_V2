@@ -703,7 +703,7 @@ function QuickActions({ onBack }: { onBack: () => void }) {
         <ActionButton icon={<Download className="h-[16px] w-[16px]" />} label="Exportar relatório" />
         <ActionButton icon={<Printer className="h-[16px] w-[16px]" />} label="Imprimir" />
         <button onClick={onBack} className="flex h-[36px] min-w-0 items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
-          <PlusCircle className="h-[16px] w-[16px]" /> Novo processo
+          <PlusCircle className="h-[16px] w-[16px] shrink-0" /> <span className="truncate">Novo processo</span>
         </button>
       </div>
     </Panel>
@@ -720,9 +720,9 @@ function ActionButton({ icon, label }: { icon: ReactNode; label: string }) {
 
 function ObservacoesPanel({ row }: { row: Row }) {
   return (
-    <Panel className="min-h-0 p-[15px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<FileText className="h-[17px] w-[17px] text-primary" />} title="Observações" />
-      <p className="mt-[21px] text-[13px] leading-none text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
+      <p className="mt-[21px] truncate text-[13px] leading-none text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
     </Panel>
   );
 }
