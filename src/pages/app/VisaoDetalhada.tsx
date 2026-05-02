@@ -548,14 +548,14 @@ function HeroMeta({ label, icon: Icon, children }: { label: string; icon: typeof
 
 function TotalProcessCard({ row, totalLabel, taxaSucesso }: { row: Row; totalLabel: string; taxaSucesso: number }) {
   return (
-    <div className="relative grid h-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-lg border border-[#1e3a8a]/60 bg-[#0a0f24] px-[28px] py-[24px]">
+    <div className="relative grid h-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-[12px] overflow-hidden rounded-lg border border-[#1e3a8a]/60 bg-[#0a0f24] px-[20px] py-[16px]">
       <div className="min-w-0">
-        <p className="text-[13px] font-bold uppercase tracking-wider leading-none text-[#3b82f6]">Tempo total do processo</p>
-        <p className="mt-[22px] truncate text-[64px] font-black leading-none tracking-tight text-white">{totalLabel}</p>
-        <p className="mt-[24px] truncate text-[15px] leading-[1.55] text-slate-400">De {fmtDateTime(row.recebida_em)}</p>
-        <p className="truncate text-[15px] leading-[1.55] text-slate-400">até {fmtDateTime(row.finalizada_em)}</p>
+        <p className="text-[12px] font-bold uppercase tracking-wider leading-none text-[#3b82f6]">Tempo total do processo</p>
+        <p className="mt-[14px] truncate text-[40px] font-black leading-none tracking-tight text-white">{totalLabel}</p>
+        <p className="mt-[16px] truncate text-[12px] leading-[1.45] text-slate-400">De {fmtDateTime(row.recebida_em)}</p>
+        <p className="truncate text-[12px] leading-[1.45] text-slate-400">até {fmtDateTime(row.finalizada_em)}</p>
       </div>
-      <div className="pr-[8px]">
+      <div className="shrink-0">
         <SlaRing value={Math.round(taxaSucesso || 92)} />
       </div>
     </div>
@@ -566,13 +566,11 @@ function SlaRing({ value }: { value: number }) {
   const clamped = Math.max(0, Math.min(100, value));
   const neon = "#c026d3";
   const neonSoft = "#a855f7";
-  // Outer dashed ring
   const outerR = 78;
   const segCount = 44;
   const outerCirc = 2 * Math.PI * outerR;
   const dashLen = (outerCirc / segCount) * 0.55;
   const gapLen = (outerCirc / segCount) - dashLen;
-  // Inner dashed ring
   const innerR = 64;
   const innerCirc = 2 * Math.PI * innerR;
   const innerSeg = 60;
@@ -580,7 +578,7 @@ function SlaRing({ value }: { value: number }) {
   const innerGap = (innerCirc / innerSeg) - innerDash;
 
   return (
-    <div className="relative h-[230px] w-[230px]">
+    <div className="relative h-[120px] w-[120px]">
       <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 65%)" }} />
       <svg viewBox="0 0 200 200" className="relative h-full w-full">
         <defs>
@@ -594,20 +592,15 @@ function SlaRing({ value }: { value: number }) {
             </feMerge>
           </filter>
         </defs>
-        {/* Outer thin solid ring */}
-        <circle cx="100" cy="100" r="88" fill="none" stroke={neon} strokeWidth="1" opacity="0.55" filter="url(#neonGlow)" />
-        {/* Outer dashed segments */}
-        <circle cx="100" cy="100" r={outerR} fill="none" stroke={neonSoft} strokeWidth="10" strokeDasharray={`${dashLen} ${gapLen}`} filter="url(#neonGlow)" />
-        {/* Mid solid ring */}
-        <circle cx="100" cy="100" r="58" fill="none" stroke={neon} strokeWidth="1" opacity="0.7" filter="url(#neonGlow)" />
-        {/* Inner dashed ring */}
-        <circle cx="100" cy="100" r={innerR} fill="none" stroke={neonSoft} strokeWidth="2" strokeDasharray={`${innerDash} ${innerGap}`} opacity="0.5" />
-        {/* Inner solid ring */}
-        <circle cx="100" cy="100" r="48" fill="none" stroke={neon} strokeWidth="1" opacity="0.6" filter="url(#neonGlow)" />
+        <circle cx="100" cy="100" r="88" fill="none" stroke={neon} strokeWidth="1.5" opacity="0.55" filter="url(#neonGlow)" />
+        <circle cx="100" cy="100" r={outerR} fill="none" stroke={neonSoft} strokeWidth="14" strokeDasharray={`${dashLen} ${gapLen}`} filter="url(#neonGlow)" />
+        <circle cx="100" cy="100" r="58" fill="none" stroke={neon} strokeWidth="1.5" opacity="0.7" filter="url(#neonGlow)" />
+        <circle cx="100" cy="100" r={innerR} fill="none" stroke={neonSoft} strokeWidth="3" strokeDasharray={`${innerDash} ${innerGap}`} opacity="0.5" />
+        <circle cx="100" cy="100" r="48" fill="none" stroke={neon} strokeWidth="1.5" opacity="0.6" filter="url(#neonGlow)" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[34px] font-black leading-none tracking-wider" style={{ color: neonSoft, textShadow: `0 0 12px ${neon}, 0 0 24px ${neon}` }}>{clamped}%</span>
-        <span className="mt-[8px] text-[12px] font-medium tracking-wide" style={{ color: neonSoft, textShadow: `0 0 8px ${neon}` }}>Dentro do SLA</span>
+        <span className="text-[20px] font-black leading-none tracking-wider" style={{ color: neonSoft, textShadow: `0 0 8px ${neon}, 0 0 16px ${neon}` }}>{clamped}%</span>
+        <span className="mt-[4px] text-[8px] font-medium tracking-wide" style={{ color: neonSoft, textShadow: `0 0 6px ${neon}` }}>Dentro do SLA</span>
       </div>
     </div>
   );
