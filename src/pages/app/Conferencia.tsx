@@ -252,6 +252,37 @@ export default function Conferencia() {
     if (error) toast.error(error.message); else toast.success("Bipagem removida");
   };
 
+  const zerarItemParaRecontagem = async (codigoItem: string) => {
+    if (!selected) return;
+    const { error } = await supabase
+      .from("conferencias")
+      .delete()
+      .eq("remessa_id", selected)
+      .eq("codigo", codigoItem);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("remessa_itens")
+      .update({ qtd_conferida: 0 })
+      .eq("remessa_id", selected)
+      .eq("codigo", codigoItem);
+    toast.success(`Item ${codigoItem} zerado — pronto para recontagem`);
+  };
+
+  const zerarTodosDivergentes = async () => {
+    if (!selected || !itensDivergentes.length) return;
+    const codigos = itensDivergentes.map((i) => i.codigo);
+    const { error } = await supabase
+      .from("conferencias")
+      .delete()
+      .eq("remessa_id", selected)
+      .in("codigo", codigos);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("remessa_itens")
+      .update({ qtd_conferida: 0 })
+      .eq("remessa_id", selected)
+      .in("codigo", codigos);
+    toast.success(`${codigos.length} itens zerados para recontagem`);
+  };
+
   const recontarItem = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected || !user || !recontaCodigo.trim()) return;
