@@ -257,8 +257,8 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
   const copyNumero = () => navigator.clipboard?.writeText(row.numero);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground animate-fade-in">
-      <div className="h-screen min-h-[720px] max-h-[920px] p-[8px_8px_10px] grid grid-rows-[183px_214px_minmax(300px,1fr)_90px] gap-[10px]">
+    <main className="min-h-screen w-full overflow-hidden bg-background text-foreground animate-fade-in">
+      <div className="grid h-[100dvh] min-h-[720px] max-h-[920px] min-w-0 grid-rows-[183px_214px_minmax(0,1fr)_90px] gap-[10px] p-[8px_8px_10px]">
         <HeroPanel row={row} totalLabel={totalLabel} taxaSucesso={taxaSucesso} copyNumero={copyNumero} />
 
         <TimelinePanel
@@ -269,7 +269,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           concluido={concluido}
         />
 
-        <section className="grid min-h-0 grid-cols-[29%_43%_27%] gap-[12px]">
+        <section className="grid min-h-0 min-w-0 grid-cols-[29%_43%_27%] gap-[12px]">
           <TimeDetailsCard
             row={row}
             totalLabel={totalLabel}
@@ -277,7 +277,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
             conferenciaLabel={conferenciaLabel}
           />
 
-          <div className="grid min-h-0 grid-rows-[215px_1fr] gap-[10px]">
+          <div className="grid min-h-0 min-w-0 grid-rows-[minmax(206px,215px)_minmax(0,1fr)] gap-[10px]">
             <ResumoProcessoCard row={row} taxaSucesso={taxaSucesso} />
             <DesempenhoCard />
           </div>
@@ -285,7 +285,7 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
           <ActivityPanel row={row} concluido={concluido} conferenciaIniciada={conferenciaIniciada} />
         </section>
 
-        <section className="grid min-h-0 grid-cols-[35%_37%_1fr] gap-[10px]">
+        <section className="grid min-h-0 min-w-0 grid-cols-[35%_37%_1fr] gap-[10px]">
           <QuickActions onBack={onBack} />
           <ObservacoesPanel row={row} />
           <div />
@@ -297,10 +297,10 @@ function DetalheProcesso({ row, onBack }: { row: Row; onBack: () => void }) {
 
 function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; totalLabel: string; taxaSucesso: number; copyNumero: () => void }) {
   return (
-    <Panel className="relative overflow-hidden p-[18px]">
+    <Panel className="relative min-w-0 overflow-hidden p-[18px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_32%,hsl(var(--primary)/0.20),transparent_34%),radial-gradient(circle_at_92%_70%,hsl(var(--success)/0.14),transparent_24%)]" />
-      <div className="relative z-10 flex h-full gap-[28px]">
-        <div className="min-w-0 flex-1">
+      <div className="relative z-10 grid h-full min-w-0 grid-cols-[minmax(320px,1fr)_540px_374px] gap-[28px]">
+        <div className="min-w-0">
           <Breadcrumb />
           <div className="mt-[25px] flex gap-[16px]">
             <div className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-lg border border-primary/40 bg-primary/12 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.28),inset_0_0_18px_hsl(var(--primary)/0.12)]">
@@ -322,7 +322,7 @@ function HeroPanel({ row, totalLabel, taxaSucesso, copyNumero }: { row: Row; tot
           </div>
         </div>
 
-        <div className="mt-[46px] h-[118px] w-[540px] shrink-0 rounded-lg border border-border/35 bg-background/12 px-[28px] py-[22px] shadow-[inset_0_0_28px_hsl(var(--primary)/0.05)]">
+        <div className="mt-[46px] h-[118px] min-w-0 rounded-lg border border-border/35 bg-background/12 px-[28px] py-[22px] shadow-[inset_0_0_28px_hsl(var(--primary)/0.05)]">
           <div className="grid h-full grid-cols-3 gap-[28px]">
             <HeroMeta label="Status" icon={CheckCircle2}>
               <Badge variant="outline" className="mt-[7px] h-[30px] rounded-full border-success/35 bg-success/18 px-[14px] text-[11px] font-black text-success shadow-[0_0_12px_hsl(var(--success)/0.35)]">
@@ -369,12 +369,12 @@ function HeroMeta({ label, icon: Icon, children }: { label: string; icon: typeof
 
 function TotalProcessCard({ row, totalLabel, taxaSucesso }: { row: Row; totalLabel: string; taxaSucesso: number }) {
   return (
-    <div className="ml-auto grid h-full w-[374px] shrink-0 grid-cols-[1fr_118px] items-center rounded-lg border border-primary/45 bg-primary/12 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
-      <div>
+    <div className="grid h-full min-w-0 grid-cols-[minmax(0,1fr)_118px] items-center rounded-lg border border-primary/45 bg-primary/12 px-[20px] py-[18px] shadow-[0_0_30px_hsl(var(--primary)/0.18),inset_0_0_28px_hsl(var(--primary)/0.08)]">
+      <div className="min-w-0">
         <p className="text-[12px] font-black uppercase leading-none text-primary">Tempo total do processo</p>
-        <p className="mt-[16px] text-[48px] font-black leading-none tracking-normal text-foreground drop-shadow-[0_0_10px_hsl(var(--primary)/0.38)]">{totalLabel}</p>
-        <p className="mt-[17px] text-[13px] leading-[1.45] text-muted-foreground">De {fmtDateTime(row.recebida_em)}</p>
-        <p className="text-[13px] leading-[1.45] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
+        <p className="mt-[16px] truncate text-[48px] font-black leading-none tracking-normal text-foreground drop-shadow-[0_0_10px_hsl(var(--primary)/0.38)]">{totalLabel}</p>
+        <p className="mt-[17px] truncate text-[13px] leading-[1.45] text-muted-foreground">De {fmtDateTime(row.recebida_em)}</p>
+        <p className="truncate text-[13px] leading-[1.45] text-muted-foreground">até {fmtDateTime(row.finalizada_em)}</p>
       </div>
       <div className="flex flex-col items-center gap-[11px]">
         <SlaRing value={Math.round(taxaSucesso || 92)} />
@@ -416,17 +416,17 @@ function TimelinePanel({
         <h2 className="text-[15px] font-black leading-none">Linha do Tempo do Processo</h2>
       </div>
 
-      <div className="absolute left-[8.8%] right-[8.5%] top-[79px] h-[2px]">
+      <div className="absolute left-[8.8%] right-[8.5%] top-[75px] h-[2px]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--success)),hsl(var(--success)),hsl(var(--primary)),hsl(var(--success)))] shadow-[0_0_12px_hsl(var(--success)/0.65)]" />
         <div className="absolute left-[25.5%] top-1/2 h-[5px] w-[9%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--success))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
         <div className="absolute left-[68.8%] top-1/2 h-[5px] w-[10%] -translate-y-1/2 bg-[radial-gradient(circle,hsl(var(--primary))_1.5px,transparent_2.4px)] [background-size:10px_5px]" />
       </div>
 
-      <TimelineDuration className="left-[30.7%] top-[47px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
-      <TimelineDuration className="left-[69.1%] top-[47px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
+      <TimelineDuration className="left-[30.7%] top-[43px]" label="Tempo até início" value={ateInicioLabel} tone="success" />
+      <TimelineDuration className="left-[69.1%] top-[43px]" label="Tempo de conferência" value={conferenciaLabel} tone="primary" />
 
       <TimelineNode
-        className="left-[6.2%] top-[49px]"
+        className="left-[5.6%] top-[43px]"
         title="RECEBIMENTO"
         titleClass="text-success"
         icon={<Archive className="h-[25px] w-[25px]" />}
@@ -437,7 +437,7 @@ function TimelinePanel({
         done
       />
       <TimelineNode
-        className="left-1/2 top-[49px] -translate-x-1/2"
+        className="left-1/2 top-[43px] -translate-x-1/2"
         title="INÍCIO DA CONFERÊNCIA"
         titleClass="text-primary"
         icon={<PlayCircle className="h-[27px] w-[27px]" />}
@@ -448,7 +448,7 @@ function TimelinePanel({
         done={conferenciaIniciada}
       />
       <TimelineNode
-        className="right-[3.8%] top-[49px]"
+        className="right-[3.2%] top-[43px]"
         title="CONFERÊNCIA FINALIZADA"
         titleClass="text-success"
         icon={<CheckCircle2 className="h-[27px] w-[27px]" />}
@@ -487,15 +487,15 @@ function TimelineNode({
 }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className={cn("absolute z-20 flex w-[245px] flex-col items-center text-center", className)}>
+    <div className={cn("absolute z-20 flex w-[245px] max-w-[24vw] flex-col items-center text-center", className)}>
       <div className="relative mb-[14px] flex h-[62px] w-[62px] items-center justify-center rounded-full border-[3px]" style={{ color: `hsl(var(${toneVar}))`, borderColor: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.12)`, boxShadow: `0 0 23px hsl(var(${toneVar}) / 0.72), inset 0 0 20px hsl(var(${toneVar}) / 0.17)` }}>
         <div className="absolute inset-[-10px] rounded-full border" style={{ borderColor: `hsl(var(${toneVar}) / 0.18)`, boxShadow: `0 0 18px hsl(var(${toneVar}) / 0.25)` }} />
         {icon}
         {done && <span className="absolute -bottom-[3px] -right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full bg-success text-success-foreground shadow-[0_0_10px_hsl(var(--success))]"><Check className="h-[11px] w-[11px]" /></span>}
       </div>
-      <p className={cn("text-[15px] font-black leading-none", titleClass)}>{title}</p>
-      <p className="mt-[10px] text-[11px] leading-none text-muted-foreground">{date}</p>
-      <p className="mt-[7px] text-[11px] leading-none text-muted-foreground">{description}</p>
+      <p className={cn("max-w-full truncate text-[15px] font-black leading-none", titleClass)}>{title}</p>
+      <p className="mt-[10px] max-w-full truncate text-[11px] leading-none text-muted-foreground">{date}</p>
+      <p className="mt-[7px] max-w-full truncate text-[11px] leading-none text-muted-foreground">{description}</p>
       <span className="mt-[11px] rounded-full border border-success/25 bg-success/15 px-[15px] py-[5px] text-[11px] font-bold text-success shadow-[0_0_10px_hsl(var(--success)/0.16)]">{status}</span>
     </div>
   );
@@ -541,21 +541,21 @@ function SectionTitle({ icon, title }: { icon: ReactNode; title: string }) {
 
 function DetailLine({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-[16px] text-muted-foreground">
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(150px,auto)] items-center gap-[16px] text-muted-foreground">
       <div className="flex items-center gap-[12px] min-w-0">
         <span className="shrink-0 text-muted-foreground">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
-      <span className="shrink-0 font-medium tabular-nums text-foreground">{value}</span>
+      <span className="truncate text-right font-medium tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
 
 function Kv({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-[9px] text-[14px]">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("tabular-nums font-bold", valueClass)}>{value}</span>
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(70px,auto)] items-center gap-4 py-[9px] text-[14px]">
+      <span className="truncate text-muted-foreground">{label}</span>
+      <span className={cn("truncate text-right tabular-nums font-bold", valueClass)}>{value}</span>
     </div>
   );
 }
@@ -565,7 +565,7 @@ function ResumoProcessoCard({ row, taxaSucesso }: { row: Row; taxaSucesso: numbe
   return (
     <Panel className="min-h-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<BarChart3 className="h-[17px] w-[17px] text-primary" />} title="Resumo do Processo" />
-      <div className="mt-[17px] grid grid-cols-4 gap-[10px]">
+      <div className="mt-[17px] grid min-w-0 grid-cols-4 gap-[10px]">
         <MetricCard label="SKUs conferidos" value={`${row.skus_conferidos || row.total_itens || 7}/${row.total_itens || 7}`} icon={<Box className="h-[21px] w-[21px]" />} tone="primary" />
         <MetricCard label="Quantidade conferida" value={`${Number(row.conferido || row.total_qtd_esperada || 100400).toLocaleString("pt-BR")}/${Number(row.total_qtd_esperada || 100400).toLocaleString("pt-BR")}`} icon={<CheckCircle2 className="h-[21px] w-[21px]" />} tone="success" />
         <MetricCard label="Itens com divergência" value={`${row.divergencias}`} icon={<Clock className="h-[21px] w-[21px]" />} tone="warning" />
@@ -585,11 +585,11 @@ function ResumoProcessoCard({ row, taxaSucesso }: { row: Row; taxaSucesso: numbe
 function MetricCard({ label, value, icon, tone }: { label: string; value: string; icon: ReactNode; tone: "primary" | "success" | "warning" | "accent" }) {
   const toneVar = tone === "success" ? "--success" : tone === "warning" ? "--warning" : tone === "accent" ? "--primary" : "--primary";
   return (
-    <div className="rounded-md border border-border/55 bg-card/70 p-[12px] shadow-[inset_0_0_22px_hsl(var(--primary)/0.04)]">
+    <div className="min-w-0 rounded-md border border-border/55 bg-card/70 p-[12px] shadow-[inset_0_0_22px_hsl(var(--primary)/0.04)]">
       <p className="h-[28px] text-[11px] leading-[1.25] text-muted-foreground">{label}</p>
       <div className="mt-[12px] flex items-center justify-between gap-2">
-        <p className="truncate text-[22px] font-black leading-none tabular-nums">{value}</p>
-        <span style={{ color: `hsl(var(${toneVar}))`, filter: `drop-shadow(0 0 7px hsl(var(${toneVar}) / 0.75))` }}>{icon}</span>
+        <p className="min-w-0 truncate text-[22px] font-black leading-none tabular-nums">{value}</p>
+        <span className="shrink-0" style={{ color: `hsl(var(${toneVar}))`, filter: `drop-shadow(0 0 7px hsl(var(${toneVar}) / 0.75))` }}>{icon}</span>
       </div>
       <div className="mt-[16px] h-[4px] rounded-full" style={{ background: `hsl(var(${toneVar}) / 0.18)` }}>
         <div className="h-full w-full rounded-full" style={{ background: `hsl(var(${toneVar}))`, boxShadow: `0 0 9px hsl(var(${toneVar}) / 0.85)` }} />
@@ -605,7 +605,7 @@ function DesempenhoCard() {
         <SectionTitle icon={<Activity className="h-[17px] w-[17px] text-success" />} title="Desempenho dos Processos" />
         <button className="rounded-md border border-border/50 bg-background/25 px-[12px] py-[5px] text-[11px] text-foreground">Últimos 7 dias</button>
       </div>
-      <div className="mt-[13px] grid h-[calc(100%-42px)] grid-cols-3 gap-[8px]">
+      <div className="mt-[13px] grid h-[calc(100%-42px)] min-w-0 grid-cols-3 gap-[8px]">
         <MiniLineCard label="Tempo médio" value="48 min" delta="↓ -12% vs. período anterior" tone="primary" data={[42, 45, 37, 44, 36, 39, 51, 46, 34, 32, 49, 83, 76]} />
         <MiniLineCard label="Taxa de sucesso" value="98,6%" delta="↑ +2,4% vs. período anterior" tone="success" data={[28, 31, 45, 50, 35, 31, 42, 48, 47, 44, 52, 67, 57, 46]} />
         <MiniLineCard label="Processos concluídos" value="24" delta="↑ +6 vs. período anterior" tone="primary" data={[35, 42, 48, 33, 27, 38, 52, 52, 51, 45, 36, 48, 64, 67, 59]} />
@@ -617,10 +617,10 @@ function DesempenhoCard() {
 function MiniLineCard({ label, value, delta, tone, data }: { label: string; value: string; delta: string; tone: "primary" | "success"; data: number[] }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className="relative overflow-hidden rounded-md border border-border/55 bg-card/62 p-[11px]">
+    <div className="relative min-w-0 overflow-hidden rounded-md border border-border/55 bg-card/62 p-[11px]">
       <p className="text-[11px] font-medium leading-none text-muted-foreground">{label}</p>
       <p className="mt-[10px] text-[20px] font-black leading-none">{value}</p>
-      <p className="mt-[8px] text-[10px] leading-none" style={{ color: `hsl(var(${toneVar}))` }}>{delta}</p>
+      <p className="mt-[8px] truncate text-[10px] leading-none" style={{ color: `hsl(var(${toneVar}))` }}>{delta}</p>
       <MiniSparkline data={data} toneVar={toneVar} />
     </div>
   );
@@ -657,9 +657,9 @@ function ActivityPanel({ row, concluido, conferenciaIniciada }: { row: Row; conc
   ];
 
   return (
-    <Panel className="min-h-0 overflow-hidden p-[16px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[16px]">
       <SectionTitle icon={<Activity className="h-[17px] w-[17px] text-primary" />} title="Atividade do Processo" />
-      <div className="mt-[13px] rounded-lg border border-border/35 bg-background/20">
+      <div className="mt-[13px] min-w-0 rounded-lg border border-border/35 bg-background/20">
         <div className="relative py-[2px]">
           <div className="absolute bottom-[28px] left-[30px] top-[28px] w-[2px] bg-[linear-gradient(180deg,hsl(var(--success)),hsl(var(--primary)),hsl(var(--success)))] shadow-[0_0_9px_hsl(var(--primary)/0.45)]" />
           {items.map((item, i) => <ActivityItem key={item.title} {...item} active={i === 1 && conferenciaIniciada} />)}
@@ -675,7 +675,7 @@ function ActivityPanel({ row, concluido, conferenciaIniciada }: { row: Row; conc
 function ActivityItem({ icon: Icon, title, desc, time, tone, active }: { icon: typeof CheckCircle2; title: string; desc: string; time: string; tone: "success" | "primary"; active?: boolean }) {
   const toneVar = tone === "success" ? "--success" : "--primary";
   return (
-    <div className="relative grid grid-cols-[48px_1fr_42px] gap-[0px] px-[11px] py-[9px] text-[12px]">
+    <div className="relative grid min-w-0 grid-cols-[48px_minmax(0,1fr)_42px] gap-[0px] px-[11px] py-[9px] text-[12px]">
       <div className="relative z-10 flex items-center justify-center">
         <span className={cn("flex h-[29px] w-[29px] items-center justify-center rounded-full border", active && "scale-105")} style={{ color: `hsl(var(${toneVar}))`, background: `hsl(var(${toneVar}) / 0.16)`, borderColor: `hsl(var(${toneVar}) / 0.5)`, boxShadow: `0 0 11px hsl(var(${toneVar}) / 0.45)` }}>
           <Icon className="h-[15px] w-[15px]" />
@@ -685,7 +685,7 @@ function ActivityItem({ icon: Icon, title, desc, time, tone, active }: { icon: t
         <p className="truncate text-[13px] font-black leading-none">{title}</p>
         <p className="mt-[5px] truncate text-[11px] leading-none text-muted-foreground">{desc}</p>
       </div>
-      <span className="text-right text-[12px] tabular-nums leading-none text-muted-foreground">{time}</span>
+      <span className="truncate text-right text-[12px] tabular-nums leading-none text-muted-foreground">{time}</span>
     </div>
   );
 }
@@ -697,13 +697,13 @@ function timeOnly(s?: string | null) {
 
 function QuickActions({ onBack }: { onBack: () => void }) {
   return (
-    <Panel className="min-h-0 p-[15px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<Zap className="h-[17px] w-[17px] text-warning" />} title="Ações rápidas" />
-      <div className="mt-[18px] grid grid-cols-3 gap-[12px]">
+      <div className="mt-[18px] grid min-w-0 grid-cols-3 gap-[12px]">
         <ActionButton icon={<Download className="h-[16px] w-[16px]" />} label="Exportar relatório" />
         <ActionButton icon={<Printer className="h-[16px] w-[16px]" />} label="Imprimir" />
-        <button onClick={onBack} className="flex h-[36px] items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
-          <PlusCircle className="h-[16px] w-[16px]" /> Novo processo
+        <button onClick={onBack} className="flex h-[36px] min-w-0 items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
+          <PlusCircle className="h-[16px] w-[16px] shrink-0" /> <span className="truncate">Novo processo</span>
         </button>
       </div>
     </Panel>
@@ -712,17 +712,17 @@ function QuickActions({ onBack }: { onBack: () => void }) {
 
 function ActionButton({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <button className="flex h-[36px] items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
-      {icon} {label}
+    <button className="flex h-[36px] min-w-0 items-center justify-center gap-[9px] rounded-md border border-border/60 bg-background/20 px-[12px] text-[12px] font-semibold text-foreground transition-colors hover:bg-primary/10">
+      <span className="shrink-0">{icon}</span> <span className="truncate">{label}</span>
     </button>
   );
 }
 
 function ObservacoesPanel({ row }: { row: Row }) {
   return (
-    <Panel className="min-h-0 p-[15px]">
+    <Panel className="min-h-0 min-w-0 overflow-hidden p-[15px]">
       <SectionTitle icon={<FileText className="h-[17px] w-[17px] text-primary" />} title="Observações" />
-      <p className="mt-[21px] text-[13px] leading-none text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
+      <p className="mt-[21px] truncate text-[13px] leading-none text-muted-foreground">{row.observacao || "Nenhuma observação registrada."}</p>
     </Panel>
   );
 }
