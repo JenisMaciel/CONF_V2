@@ -150,7 +150,7 @@ export default function AppLayout() {
             <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <span className="font-semibold">{settings.app_name}</span>
+          <span className="font-semibold text-white">{settings.app_name}</span>
             <div className="w-10" />
           </header>
           <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
