@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, PackageCheck } from "lucide-react";
-import loginBg from "@/assets/login-bg.jpg";
+import conferenciaBg from "@/assets/conferencia-bg.jpg";
 
 export default function Login() {
   const { user, loading: authLoading, signIn } = useAuth();
@@ -28,7 +28,7 @@ export default function Login() {
     else toast.success("Bem-vindo!");
   };
 
-  const heroImage = settings.login_image_url || loginBg;
+  const heroImage = conferenciaBg;
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
